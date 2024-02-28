@@ -1,24 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>exe</OutputType>
+        
         <!-- Multi Target -->
         <TargetFrameworks>
             <!-- All supported Core versions as per https://versionsof.net/ -->
             net8.0;net7.0;net6.0;
             <!-- The latest Framework -->
             net48;
+            <!-- Both Standard versions (source generators are stuck on .Net Standard 2.0 -->
+            netstandard2.1;netstandard2.0;
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <AssemblyName>Tests</AssemblyName>
-        <RootNamespace>ScrubJay.Text.Tests</RootNamespace>
-
-        <IsPackable>false</IsPackable>
-        <IsTestProject>true</IsTestProject>
-        <NoWarn>$(NoWarn);NU1701</NoWarn>
+        <AssemblyName>ConsoleApp</AssemblyName>
+        <RootNamespace>ScrubJay.Text.ConsoleApp</RootNamespace>
     </PropertyGroup>
 
     <!-- NuGet Packages -->
@@ -31,35 +31,22 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-        <PackageReference Include="xunit" Version="2.7.0" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.1">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
         <PackageReference Include="PolySharp" Version="1.14.1">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-    
-    <!-- Global Usings -->
+
     <ItemGroup>
-        <Using Include="Xunit"/>
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\Benchmarks\Benchmarks.csproj" />
-      <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\Benchmarks\Benchmarks.csproj" />
     </ItemGroup>
 
     <PropertyGroup>
         <!-- Make PolySharp's implementations public -->
         <PolySharpUsePublicAccessibilityForGeneratedTypes>true</PolySharpUsePublicAccessibilityForGeneratedTypes>
     </PropertyGroup>
-    
+
 </Project>
