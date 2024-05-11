@@ -30,15 +30,18 @@ public class TextBuilder : IDisposable
     {
         int newCapacity = (Capacity + minCapacityIncrease) * 2;
         var newArray = TextPool.Rent(newCapacity);
-        
+        TextHelper.Unsafe.CopyTo(_charArray, newArray, _count);
+        TextPool.Return(_charArray);
+        _charArray = newArray;
     }
     
     public TextBuilder Append(char ch)
     {
         if (_count >= _charArray.Length)
         {
-            
+            GrowBy(1);
         }
+        _charArray[_count++] = ch;
         return this;
     }
     

@@ -142,7 +142,7 @@ public static class TextHelper
         /// <param name="count">The number of characters to copy</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(
-            ReadOnlySpan<char> source,
+            text source,
             ref char destination,
             int count)
         {
@@ -157,8 +157,8 @@ public static class TextHelper
         /// <param name="destination">The destination writable text</param>
         /// <param name="count">The number of characters to copy</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyBlock(
-            ReadOnlySpan<char> source,
+        public static void CopyTo(
+            text source,
             char[] destination,
             int count)
         {
@@ -174,7 +174,7 @@ public static class TextHelper
         /// <param name="count">The number of characters to copy</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(
-            ReadOnlySpan<char> source,
+            text source,
             Span<char> destination,
             int count)
         {

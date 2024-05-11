@@ -13,10 +13,32 @@ public class TextToStringBenchmarks
     }
 
 
+    [Benchmark(Baseline = true)]
+    [ArgumentsSource(nameof(Args))]
+    public string ROSpanToString(string str)
+    {
+        ReadOnlySpan<char> text = str.AsSpan();
+        return text.ToString();
+    }
+
+#if !(NET48 || NETSTANDARD2_0)
     [Benchmark]
     [ArgumentsSource(nameof(Args))]
-    public string ROSpanToString(ReadOnlySpan<char> text)
+    public string NewStringFromROSpan(string str)
     {
-        return text.ToString();
+        ReadOnlySpan<char> text = str.AsSpan();
+        return new string(text);
+    }
+#endif
+
+    [Benchmark]
+    [ArgumentsSource(nameof(Args))]
+    public unsafe string NewStringFromPointer(string str)
+    {
+        ReadOnlySpan<char> text = str.AsSpan();
+        fixed (char* ptr = text)
+        {
+            return new string(ptr, 0, text.Length);
+        }
     }
 }

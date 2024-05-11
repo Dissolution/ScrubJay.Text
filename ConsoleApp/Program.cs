@@ -23,7 +23,7 @@ var benchmarkConfig = ManualConfig.CreateEmpty()
     .AddValidator(DefaultConfig.Instance.GetValidators().ToArray())
     .AddJob(Job.ShortRun);
 
-var results = BenchmarkRunner.Run<TextCopyBenchmarks>(benchmarkConfig);
+var results = BenchmarkRunner.Run<TextToStringBenchmarks>(benchmarkConfig);
 
 Process.Start("explorer.exe", results.ResultsDirectoryPath);
     

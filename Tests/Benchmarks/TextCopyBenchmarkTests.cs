@@ -12,7 +12,7 @@ public class TextCopyBenchmarkTests
         { new string('x', 1000), new char[1024] },
     };
 
-    public static TextCopyBenchmarks Benchmarks { get; } = new TextCopyBenchmarks();
+    public static TextCopyBenchmarks Benchmarks { get; } = new();
     
     
     [Theory]
