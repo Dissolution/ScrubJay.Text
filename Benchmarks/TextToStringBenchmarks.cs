@@ -21,15 +21,20 @@ public class TextToStringBenchmarks
         return text.ToString();
     }
 
-#if !(NET48 || NETSTANDARD2_0)
+
     [Benchmark]
     [ArgumentsSource(nameof(Args))]
     public string NewStringFromROSpan(string str)
     {
         ReadOnlySpan<char> text = str.AsSpan();
+#if NET481 || NETSTANDARD2_0
+        return new string()
+#else
         return new string(text);
-    }
 #endif
+    }
+
+
 
     [Benchmark]
     [ArgumentsSource(nameof(Args))]

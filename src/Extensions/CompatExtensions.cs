@@ -1,11 +1,8 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-namespace ScrubJay.Text.Extensions;
+﻿namespace ScrubJay.Text.Extensions;
 
 public static class CompatExtensions
 {
-#if NET48 || NETSTANDARD2_0 || NETSTANDARD2_1
+#if NET481 || NETSTANDARD2_0 || NETSTANDARD2_1
     public static ref readonly char GetPinnableReference(this string str)
     {
         unsafe

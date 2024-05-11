@@ -1,9 +1,9 @@
-﻿namespace ScrubJay.Text.Benchmarks;
+﻿using ScrubJay.Text.Extensions;
+
+namespace ScrubJay.Text.Benchmarks;
 
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
-using Extensions;
 using static InlineIL.IL;
 
 public class TextCopyBenchmarks
