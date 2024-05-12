@@ -1,0 +1,38 @@
+﻿namespace ScrubJay.Text.Benchmarks;
+
+using BenchmarkDotNet.Attributes;
+
+public class CharToStringBenchmarks
+{
+    public static IEnumerable<object[]> Characters()
+    {
+        yield return new object[1] { '\0' };
+        yield return new object[1] { ',' };
+        yield return new object[1] { char.MaxValue };
+    }
+
+
+    [Benchmark(Baseline = true)]
+    [ArgumentsSource(nameof(Characters))]
+    public string CharToString(char ch)
+    {
+        return ch.ToString();
+    }
+
+
+    [Benchmark]
+    [ArgumentsSource(nameof(Characters))]
+    public string NewStringFromChar(char ch)
+    {
+        return new string(ch, 1);
+    }
+
+    
+    [Benchmark]
+    [ArgumentsSource(nameof(Characters))]
+    public unsafe string NewStringFromPointer(char ch)
+    {
+        char* ptr = &ch;
+        return new string(ptr, 0, 1);
+    }
+}

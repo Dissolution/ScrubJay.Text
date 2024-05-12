@@ -50,6 +50,10 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="System.Collections"/>
+        
+        <Using Include="ScrubJay.Text.Collections"/>
+        <Using Include="ScrubJay.Text.Extensions"/>
+
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">

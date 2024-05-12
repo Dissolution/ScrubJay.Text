@@ -24,4 +24,26 @@ public static class CompatExtensions
         return ref charArray[0];
 #endif
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Clamp(this int value, int min, int max)
+    {
+        if (min > max)
+        {
+            throw new ArgumentOutOfRangeException(nameof(max), max, $"Maximum must be greater or equal to Minimum");
+        }
+
+        if (value < min)
+        {
+            return min;
+        }
+        else if (value > max)
+        {
+            return max;
+        }
+
+        return value;
+    }
 }
+
+

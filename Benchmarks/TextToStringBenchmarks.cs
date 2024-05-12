@@ -15,7 +15,7 @@ public class TextToStringBenchmarks
 
     [Benchmark(Baseline = true)]
     [ArgumentsSource(nameof(Args))]
-    public string ROSpanToString(string str)
+    public string ReadOnlySpanToString(string str)
     {
         ReadOnlySpan<char> text = str.AsSpan();
         return text.ToString();
@@ -24,11 +24,11 @@ public class TextToStringBenchmarks
 
     [Benchmark]
     [ArgumentsSource(nameof(Args))]
-    public string NewStringFromROSpan(string str)
+    public string NewStringFromReadOnlySpan(string str)
     {
         ReadOnlySpan<char> text = str.AsSpan();
 #if NET481 || NETSTANDARD2_0
-        return new string()
+        return new string(text.ToArray());
 #else
         return new string(text);
 #endif

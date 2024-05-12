@@ -7,8 +7,6 @@
             net8.0;net7.0;net6.0;
             <!-- The latest Framework -->
             net481;
-            <!-- Both Standard versions (source generators are stuck on .Net Standard 2.0 -->
-            netstandard2.1;netstandard2.0;
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -19,15 +17,13 @@
         <RootNamespace>ScrubJay.Text.Benchmarks</RootNamespace>
     </PropertyGroup>
 
-    <!-- NuGet Packages -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="System.Memory" Version="4.5.5"/>
+    <ItemGroup>
+        <Using Include="ScrubJay.Text.GlobalHelpers" Static="true"/>
     </ItemGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
-        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+    
+    <!-- NuGet Packages -->
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' or '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -39,7 +35,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="InlineIL.Fody" Version="1.8.0">
+        <PackageReference Include="InlineIL.Fody" Version="1.8.0" >
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>
