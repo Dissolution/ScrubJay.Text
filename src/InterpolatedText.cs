@@ -1,33 +1,52 @@
-﻿namespace ScrubJay.Text.Scratch;
+﻿namespace ScrubJay.Text;
 
+[PublicAPI]
 [InterpolatedStringHandler]
 public ref struct InterpolatedText
 {
+    private const int DEFAULT_GROW = 64;
+    
     private char[]? _charArray;
-    private Span<char> _chars;
+    private Span<char> _charSpan;
     private int _position;
 
     private Span<char> Available
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _chars.Slice(_position);
+        get => _charSpan.Slice(_position);
     }
 
     private int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _chars.Length;
+        get => _charSpan.Length;
     }
 
+    public ref char this[Index index] => ref _charSpan.Slice(0, _position)[index];
+
+    public Span<char> this[Range range] => _charSpan.Slice(0, _position)[range];
+    
+    public int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _position;
+    }
+
+    public InterpolatedText()
+    {
+        _charSpan = _charArray = TextPool.Rent();
+        _position = 0;
+    }
+    
     public InterpolatedText(int literalLength, int formattedCount)
     {
-        _chars = _charArray = TextPool.Rent(literalLength + (formattedCount * 16));
+        _charSpan = _charArray = TextPool.Rent(literalLength + (formattedCount * 16));
         _position = 0;
     }
 
     public InterpolatedText(Span<char> initialBuffer)
     {
-        _chars = initialBuffer;
+        _charSpan = initialBuffer;
         _charArray = null;
         _position = 0;
     }
@@ -36,19 +55,29 @@ public ref struct InterpolatedText
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void GrowBy(int additionalChars)
     {
-        int newCapacity = ((_chars.Length + additionalChars) * 2).Clamp(TextPool.MIN_CAPACITY, TextPool.MAX_CAPACITY);
-        char[] newArray = TextPool.Rent(newCapacity);
-        TextHelper.Unsafe.CopyBlock(_chars, newArray, _position);
+        char[] newArray = TextPool.Rent((_charSpan.Length + additionalChars) * 2);
+        TextHelper.Unsafe.CopyBlock(_charSpan, newArray, _position);
 
         char[]? toReturn = _charArray;
-        _chars = _charArray = newArray;
+        _charSpan = _charArray = newArray;
 
         TextPool.Return(toReturn);
     }
     
+    
+    public void AppendLiteral(char ch)
+    {
+        if (_position >= _charSpan.Length)
+        {
+            GrowBy(1);
+        }
+
+        Available[0] = ch;
+        _position += 1;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendLiteral([DisallowNull, NotNull] string str)
+    public void AppendLiteral(string str)
     {
         int pos = _position;
         int len = str.Length;
@@ -62,7 +91,7 @@ public ref struct InterpolatedText
     
     public void AppendFormatted(char ch)
     {
-        if (_position >= _chars.Length)
+        if (_position >= _charSpan.Length)
         {
             GrowBy(1);
         }
@@ -102,7 +131,7 @@ public ref struct InterpolatedText
                 int charsWritten;
                 while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, default, default))
                 {
-                    GrowBy(64);
+                    GrowBy(DEFAULT_GROW);
                 }
 
                 _position += charsWritten;
@@ -134,7 +163,7 @@ public ref struct InterpolatedText
                 int charsWritten;
                 while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, default))
                 {
-                    GrowBy(64);
+                    GrowBy(DEFAULT_GROW);
                 }
 
                 _position += charsWritten;
@@ -166,7 +195,7 @@ public ref struct InterpolatedText
                 int charsWritten;
                 while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, default))
                 {
-                    GrowBy(64);
+                    GrowBy(DEFAULT_GROW);
                 }
 
                 _position += charsWritten;
@@ -187,8 +216,10 @@ public ref struct InterpolatedText
         }
     }
 
-    public text AsSpan() => _chars.Slice(0, _position);
+    public Span<char> AsSpan() => _charSpan.Slice(0, _position);
 
+    public text AsText() => AsSpan();
+    
     public void Dispose()
     {
         char[]? toReturn = _charArray;
@@ -203,5 +234,5 @@ public ref struct InterpolatedText
         return result;
     }
 
-    public override string ToString() => AsSpan().AsString();
+    public override string ToString() => AsSpan().ToString();
 }

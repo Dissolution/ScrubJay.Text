@@ -4,11 +4,12 @@ using BenchmarkDotNet.Attributes;
 
 public class CharToStringBenchmarks
 {
-    public static IEnumerable<object[]> Characters()
+    public static IEnumerable<char> Characters()
     {
-        yield return new object[1] { '\0' };
-        yield return new object[1] { ',' };
-        yield return new object[1] { char.MaxValue };
+        yield return '\0';
+        yield return ',';
+        yield return (char)127;
+        yield return char.MaxValue;
     }
 
 

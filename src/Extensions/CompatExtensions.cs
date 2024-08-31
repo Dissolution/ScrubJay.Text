@@ -2,7 +2,7 @@
 
 public static class CompatExtensions
 {
-#if NET481 || NETSTANDARD2_0 || NETSTANDARD2_1
+#if NET48_OR_GREATER || NETSTANDARD2_0 || NETSTANDARD2_1
     public static ref readonly char GetPinnableReference(this string str)
     {
         unsafe
@@ -23,26 +23,6 @@ public static class CompatExtensions
 #else
         return ref charArray[0];
 #endif
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Clamp(this int value, int min, int max)
-    {
-        if (min > max)
-        {
-            throw new ArgumentOutOfRangeException(nameof(max), max, $"Maximum must be greater or equal to Minimum");
-        }
-
-        if (value < min)
-        {
-            return min;
-        }
-        else if (value > max)
-        {
-            return max;
-        }
-
-        return value;
     }
 }
 

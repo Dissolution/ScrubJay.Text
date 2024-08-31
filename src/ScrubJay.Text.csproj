@@ -6,7 +6,7 @@
             net8.0;net7.0;net6.0;
             <!-- Support for both .Net Standard versions ~~ .Net Standard 2.0 so we can be consumed by Source Generators, which are currently limited to that version -->
             netstandard2.1;netstandard2.0;
-            <!-- Only supported version of .Net Framework ~~https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
+            <!-- Only supported version of .Net Framework ~~ https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
             net481;
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
@@ -16,6 +16,7 @@
 
         <RootNamespace>ScrubJay.Text</RootNamespace>
         <AssemblyName>ScrubJay.Text</AssemblyName>
+        <PolyPublic>true</PolyPublic>
 
         <!-- Setup NuGet -->
         <IsPackable>true</IsPackable>
@@ -25,7 +26,7 @@
         <Title>ScrubJay Text</Title>
         <Authors>Timothy Jay</Authors>
         <Description>
-            
+
         </Description>
         <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Text</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
@@ -50,10 +51,11 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="System.Collections"/>
-        
+
         <Using Include="ScrubJay.Text.Collections"/>
         <Using Include="ScrubJay.Text.Extensions"/>
 
+        <Using Include="JetBrains.Annotations"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
@@ -75,19 +77,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.8.0">
+        <PackageReference Include="Fody" Version="6.8.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="InlineIL.Fody" Version="1.8.0" >
+        <PackageReference Include="InlineIL.Fody" Version="1.8.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="PolySharp" Version="1.14.1">
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Polyfill" Version="6.4.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-    <PropertyGroup>
-        <PolySharpUsePublicAccessibilityForGeneratedTypes>true</PolySharpUsePublicAccessibilityForGeneratedTypes>
-    </PropertyGroup>
 </Project>
