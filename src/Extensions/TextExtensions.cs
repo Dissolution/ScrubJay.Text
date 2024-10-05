@@ -7,7 +7,7 @@ public static class TextExtensions
     /// </summary>
     public static string AsString(this text text)
     {
-#if (NET481 || NETSTANDARD2_0)
+#if (NET48_OR_GREATER || NETSTANDARD2_0)
         unsafe
         {
             fixed (char* ptr = text)

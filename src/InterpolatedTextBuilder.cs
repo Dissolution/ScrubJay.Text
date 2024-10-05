@@ -1,18 +1,25 @@
 ﻿namespace ScrubJay.Text;
 
+/// <summary>
+/// An InterpolatedStringHandler that writes to a <see cref="FluentTextBuilder{B}"/>
+/// </summary>
+/// <typeparam name="B"></typeparam>
 [PublicAPI]
 [InterpolatedStringHandler]
 public ref struct InterpolatedTextBuilder<B>
-    where B : FluentTextBuilder<B>, new()
+    where B : FluentTextBuilder<B>
 {
     private B _builder;
     
-    public InterpolatedTextBuilder(B builder)
+    /// <summary>
+    /// Construct a new <see cref="InterpolatedTextBuilder{B}"/> that writes to a <typeparamref name="B"/> <paramref name="builder"/>
+    /// </summary>
+    public InterpolatedTextBuilder(int literalLength, int formattedCount, B builder)
     {
         _builder = builder;
     }
-
-    public void AppendLiteral(string? str) => _builder.Append(str);
+    
+    public void AppendLiteral(string str) => _builder.Append(str);
     public void AppendFormatted(char ch) => _builder.Append(ch);
     public void AppendFormatted(text txt) => _builder.Append(txt); 
     public void AppendFormatted(string? str) => _builder.Append(str);

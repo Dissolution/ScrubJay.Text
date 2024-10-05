@@ -1,21 +1,35 @@
-﻿namespace ScrubJay.Text;
+﻿// ReSharper disable MergeCastWithTypeCheck
+// ReSharper disable ConvertIfStatementToConditionalTernaryExpression
+namespace ScrubJay.Text;
 
+/// <summary>
+/// A FluentTextBuilder uses fluent operations to build up complex <see cref="string">strings</see>
+/// </summary>
+/// <typeparam name="B">
+/// The <see cref="Type"/> of <see cref="FluentTextBuilder{B}"/> that will be returned from all fluent operations
+/// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
 public abstract class FluentTextBuilder<B> : IDisposable
-    where B : FluentTextBuilder<B>, new()
+    where B : FluentTextBuilder<B>
 {
+    /// <summary>
+    /// An <see cref="Action{B}"/> that applies to a <see cref="FluentTextBuilder{B}"/> <paramref name="builder"/>
+    /// </summary>
     public delegate void BuilderAction(B builder);
 
+    /// <summary>
+    /// An <see cref="Action{B,T}"/> that applies to a <see cref="FluentTextBuilder{B}"/> <paramref name="builder"/> and a <typeparamref name="T"/> <paramref name="value"/>
+    /// </summary>
     public delegate void BuilderValueAction<in T>(B builder, T value);
 
+    /// <summary>
+    /// An <see cref="Action{B,T,I}"/> that applies to a <see cref="FluentTextBuilder{B}"/> <paramref name="builder"/>, a <typeparamref name="T"/> <paramref name="value"/>, and an <c>int</c> <paramref name="index"/>
+    /// </summary>
     public delegate void BuilderValueIndexAction<in T>(B builder, T value, int index);
-
-
-    public static B New => new();
-
+    
     protected readonly B _builder;
-    private readonly TextBuffer _textBuffer;
+    protected readonly Buffer<char> _textBuffer;
 
     protected FluentTextBuilder()
     {
@@ -29,27 +43,57 @@ public abstract class FluentTextBuilder<B> : IDisposable
         _builder = (B)this;
     }
 
+    /// <summary>
+    /// Append a new <see cref="char"/> to this <typeparamref name="B"/>
+    /// </summary>
+    /// <param name="ch">The <see cref="char"/> to append</param>
+    /// <returns>
+    /// This <typeparamref name="B"/> builder instance
+    /// </returns>
     public virtual B Append(char ch)
     {
-        _textBuffer.Write(ch);
+        _textBuffer.Add(ch);
         return _builder;
     }
 
     public virtual B Append(scoped text text)
     {
-        _textBuffer.Write(text);
+        _textBuffer.AddMany(text);
         return _builder;
     }
 
-    public virtual B Append(string? str)
-    {
-        _textBuffer.Write(str);
-        return _builder;
-    }
+    public virtual B Append(string? str) => Append(str.AsSpan());
 
     public virtual B Append<T>(T? value)
     {
-        _textBuffer.Write<T>(value);
+#if NET6_0_OR_GREATER
+        if (value is ISpanFormattable)
+        {
+            int charsWritten;
+            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, default, default))
+            {
+                _textBuffer.Grow();
+            }
+
+            _textBuffer.Count += charsWritten;
+            return _builder;
+        }
+#endif
+
+        string? str;
+        if (value is IFormattable)
+        {
+            str = ((IFormattable)value).ToString(default, default);
+        }
+        else
+        {
+            str = value?.ToString();
+        }
+
+        if (str is not null)
+        {
+            _textBuffer.AddMany(str.AsSpan());
+        }
         return _builder;
     }
 
@@ -62,22 +106,72 @@ public abstract class FluentTextBuilder<B> : IDisposable
 
     public virtual B Format<T>(T? value, string? format, IFormatProvider? provider = null)
     {
-        _textBuffer.WriteFormatted<T>(value, format, provider);
+#if NET6_0_OR_GREATER
+        if (value is ISpanFormattable)
+        {
+            int charsWritten;
+            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, format, provider))
+            {
+                _textBuffer.Grow();
+            }
+
+            _textBuffer.Count += charsWritten;
+            return _builder;
+        }
+#endif
+
+        string? str;
+        if (value is IFormattable)
+        {
+            str = ((IFormattable)value).ToString(format, provider);
+        }
+        else
+        {
+            str = value?.ToString();
+        }
+
+        if (str is not null)
+        {
+            _textBuffer.AddMany(str.AsSpan());
+        }
         return _builder;
     }
 
     public virtual B Format<T>(T? value, text format, IFormatProvider? provider = null)
     {
-        _textBuffer.WriteFormatted<T>(value, format, provider);
+#if NET6_0_OR_GREATER
+        if (value is ISpanFormattable)
+        {
+            int charsWritten;
+            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, format, provider))
+            {
+                _textBuffer.Grow();
+            }
+
+            _textBuffer.Count += charsWritten;
+            return _builder;
+        }
+#endif
+
+        string? str;
+        if (value is IFormattable)
+        {
+            str = ((IFormattable)value).ToString(format.ToString(), provider);
+        }
+        else
+        {
+            str = value?.ToString();
+        }
+
+        if (str is not null)
+        {
+            _textBuffer.AddMany(str.AsSpan());
+        }
         return _builder;
     }
 
 
-    public virtual B NewLine()
-    {
-        _textBuffer.Write(Environment.NewLine.AsSpan());
-        return _builder;
-    }
+    public virtual B NewLine() => Append(Environment.NewLine);
 
 
     public B Enumerate<T>(ReadOnlySpan<T> values, BuilderValueAction<T> onBuilderValue)
@@ -145,7 +239,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.Add(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -155,7 +249,9 @@ public abstract class FluentTextBuilder<B> : IDisposable
 
     public B Delimit<T>(string? delimiter, ReadOnlySpan<T> values, BuilderValueAction<T> onBuilderValue)
     {
-        if (delimiter is null || delimiter.Length == 0)
+        text del = delimiter.AsSpan();
+        
+        if (del.Length == 0)
             return Enumerate(values, onBuilderValue);
         // if (delimiter == Environment.NewLine)
         //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
@@ -165,7 +261,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.AddMany(del);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -176,15 +272,13 @@ public abstract class FluentTextBuilder<B> : IDisposable
     {
         if (delimiter.Length == 0)
             return Enumerate(values, onBuilderValue);
-        // if (delimiter == Environment.NewLine)
-        //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
         int len = values.Length;
         if (len == 0)
             return _builder;
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.AddMany(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -227,7 +321,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         onBuilderValue(_builder, e.Current);
         while (e.MoveNext())
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.Add(delimiter);
             onBuilderValue(_builder, e.Current);
         }
 
@@ -237,7 +331,8 @@ public abstract class FluentTextBuilder<B> : IDisposable
 
     public B Delimit<T>(string? delimiter, IEnumerable<T>? values, BuilderValueAction<T> onBuilderValue)
     {
-        if (delimiter is null || delimiter.Length == 0)
+        text del = delimiter.AsSpan();
+        if (del.Length == 0)
             return Enumerate<T>(values, onBuilderValue);
         // if (delimiter == Environment.NewLine)
         //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
@@ -249,7 +344,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         onBuilderValue(_builder, e.Current);
         while (e.MoveNext())
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.AddMany(del);
             onBuilderValue(_builder, e.Current);
         }
 
@@ -260,8 +355,6 @@ public abstract class FluentTextBuilder<B> : IDisposable
     {
         if (delimiter.Length == 0)
             return Enumerate<T>(values, onBuilderValue);
-        // if (delimiter == Environment.NewLine)
-        //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
         if (values is null)
             return _builder;
         using var e = values.GetEnumerator();
@@ -270,7 +363,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         onBuilderValue(_builder, e.Current);
         while (e.MoveNext())
         {
-            _textBuffer.Write(delimiter);
+            _textBuffer.AddMany(delimiter);
             onBuilderValue(_builder, e.Current);
         }
 
@@ -307,16 +400,18 @@ public abstract class FluentTextBuilder<B> : IDisposable
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public text AsText() => _textBuffer.AsText();
+    public text AsText() => _textBuffer.Written;
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         _textBuffer.Dispose();
     }
 
     public string ToStringAndDispose()
     {
-       return _textBuffer.ToStringAndDispose();
+        string str = this.ToString();
+        this.Dispose();
+        return str;
     }
 
     public override string ToString()

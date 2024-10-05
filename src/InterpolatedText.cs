@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text;
+﻿using ScrubJay.Text.Buffers;
+
+namespace ScrubJay.Text;
 
 [PublicAPI]
 [InterpolatedStringHandler]

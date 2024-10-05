@@ -1,27 +1,41 @@
 ﻿using static InlineIL.IL;
+
 // ReSharper disable EntityNameCapturedOnly.Global
 
 namespace ScrubJay.Text;
 
+/// <summary>
+/// Methods for efficiently working on textual types (<see cref="char"/>, <see cref="string"/>, <see cref="text">ReadOnlySpan&lt;char&gt;</see>
+/// </summary>
 [PublicAPI]
 public static class TextHelper
 {
+#region Unsafe
+
     /// <summary>
-    /// Unsafe methods for textual types
+    /// <c>unsafe</c> methods on textual types
     /// </summary>
     /// <remarks>
-    /// <b>WARNING</b>: All methods in <see cref="Unsafe"/> lack bounds checking!
+    /// <b>WARNING</b>: All methods in <see cref="Unsafe"/> lack bounds checking and can cause undefined behavior
     /// </remarks>
     public static class Unsafe
     {
         /// <summary>
-        /// Efficiently copy <paramref name="count"/> <see cref="char">characters</see> from a
-        /// <c>in</c> <see cref="char"/> <paramref name="source"/>
-        /// to a <c>ref</c> <see cref="char"/> <paramref name="destination"/>
+        /// Efficiently copy <see cref="char">characters</see> from a
+        /// <c>in char</c> <paramref name="source"/> pointer
+        /// to a <c>ref char</c> <paramref name="destination"/> pointer
+        /// <br/>
+        /// <b>Warning:</b> behavior is undefined if <paramref name="source"/> and <paramref name="destination"/> overlap
         /// </summary>
-        /// <param name="source">A readonly reference to the starting <see cref="char"/> in the source text</param>
-        /// <param name="destination">A reference to the starting <see cref="char"/> in the destination buffer</param>
-        /// <param name="count">The number of <see cref="char"/>s to copy from <paramref name="source"/> to <paramref name="destination"/></param>
+        /// <param name="source">
+        /// A readonly reference to the starting <see cref="char"/> in the source text
+        /// </param>
+        /// <param name="destination">
+        /// A reference to the starting <see cref="char"/> in the destination buffer
+        /// </param>
+        /// <param name="count">
+        /// The number of <see cref="char"/>s to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         /// <remarks>
         /// <see cref="M:System.Runtime.CompilerServices.Unsafe.CopyBlock"/> has limitations:<br/>
         /// - It requires either <c>ref byte</c><br/>
@@ -36,31 +50,42 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CpBlk(in char source, ref char destination, int count)
         {
+            // Cpblk wants the destination pointer first
             Emit.Ldarg(nameof(destination));
+
+            // Then the source
             Emit.Ldarg(nameof(source));
+
+            // We need a total byte count
+            // sizeof(char) == 2 (bytes)
             Emit.Ldarg(nameof(count));
-            Emit.Sizeof<char>(); // == 2
+            Emit.Ldc_I4_2();
             Emit.Mul();
+            //Emit.Conv_U4();
 
-            // `*2` == `<< 1`
-            //Emit.Ldc_I4_1();
-            //Emit.Shl();
-
+            // Now we can call the instruction 
             Emit.Cpblk();
         }
 
-        /* This is all the variations of CopyBlock:
+        /* All the public methods for CopyBlock allow for the most efficient conversion of
+         * source + dest to what CpBlk is expecting
+         *
          * Source types: `in char`, `char[]`, `ReadOnlySpan<char>`, `string`
          * Destination types: `ref char`, `char[]`, `Span<char>`
          */
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/> <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, ref char destination, int count)
         {
@@ -68,12 +93,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/> <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, char[] destination, int count)
         {
@@ -81,12 +111,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/> <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, Span<char> destination, int count)
         {
@@ -94,12 +129,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/> <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, ref char destination, int count)
         {
@@ -107,12 +147,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, char[] destination, int count)
         {
@@ -120,12 +165,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, Span<char> destination, int count)
         {
@@ -133,25 +183,34 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         public static void CopyBlock(text source, ref char destination, int count)
         {
             CpBlk(in source.GetPinnableReference(), ref destination, count);
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, char[] destination, int count)
         {
@@ -159,12 +218,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, Span<char> destination, int count)
         {
@@ -172,12 +236,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, ref char destination, int count)
         {
@@ -185,12 +254,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, char[] destination, int count)
         {
@@ -198,12 +272,17 @@ public static class TextHelper
         }
 
         /// <summary>
-        /// Copies the block of <paramref name="count"/>  <see cref="char">characters</see>
-        /// from <paramref name="source"/> to <paramref name="destination"/>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
         /// </summary>
-        /// <param name="source">The source readable text</param>
-        /// <param name="destination">The destination writable text</param>
-        /// <param name="count">The number of characters to copy</param>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, Span<char> destination, int count)
         {
@@ -211,72 +290,167 @@ public static class TextHelper
         }
     }
 
-    /* These methods mirror Unsafe.CopyBlock
-     * Source types: `char[]`, `ReadOnlySpan<char>/text`, `string`
+#endregion
+
+#region TryCopy
+
+    /* All TryCopy methods are mirrors of the methods in Unsafe with nullability and bounds checking
+     *
+     * Source types: `char[]`, `ReadOnlySpan<char>`, `string`
      * Destination types: `char[]`, `Span<char>`
      */
 
-    public static bool TryCopy(char[]? source, char[]? destination)
-    {
-        if (source is null || destination is null)
-            return false;
-        int count = source.Length;
-        if (count > destination.Length)
-            return false;
-        Unsafe.CopyBlock(source, destination, count);
-        return true;
-    }
-
-    public static bool TryCopy(char[]? source, Span<char> destination)
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A character array (<c>char[]</c>) to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character array (<c>char[]</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(char[]? source, char[]? destination)
     {
         if (source is null)
-            return false;
+            return new ArgumentNullException(nameof(source));
+        if (destination is null)
+            return new ArgumentNullException(nameof(destination));
         int count = source.Length;
         if (count > destination.Length)
-            return false;
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
         Unsafe.CopyBlock(source, destination, count);
-        return true;
+        return count;
     }
 
-    public static bool TryCopy(text source, char[]? destination)
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A character array (<c>char[]</c>) to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(char[]? source, Span<char> destination)
+    {
+        if (source is null)
+            return new ArgumentNullException(nameof(source));
+        int count = source.Length;
+        if (count > destination.Length)
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
+        Unsafe.CopyBlock(source, destination, count);
+        return count;
+    }
+
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character array (<c>char[]</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(text source, char[]? destination)
     {
         if (destination is null)
-            return false;
+            return new ArgumentNullException(nameof(destination));
         int count = source.Length;
         if (count > destination.Length)
-            return false;
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
         Unsafe.CopyBlock(source, destination, count);
-        return true;
+        return count;
     }
 
-    public static bool TryCopy(text source, Span<char> destination)
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(text source, Span<char> destination)
     {
         int count = source.Length;
         if (count > destination.Length)
-            return false;
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
         Unsafe.CopyBlock(source, destination, count);
-        return true;
+        return count;
     }
 
-    public static bool TryCopy(string? source, char[]? destination)
-    {
-        if (source is null || destination is null)
-            return false;
-        int count = source.Length;
-        if (count > destination.Length)
-            return false;
-        Unsafe.CopyBlock(source, destination, count);
-        return true;
-    }
-
-    public static bool TryCopy(string? source, Span<char> destination)
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A <see cref="string"/> to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character array (<c>char[]</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(string? source, char[]? destination)
     {
         if (source is null)
-            return false;
+            return new ArgumentNullException(nameof(source));
+        if (destination is null)
+            return new ArgumentNullException(nameof(destination));
         int count = source.Length;
         if (count > destination.Length)
-            return false;
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
         Unsafe.CopyBlock(source, destination, count);
-        return true;
+        return count;
     }
+
+    /// <summary>
+    /// Try to copy a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="source">
+    /// A <see cref="string"/> to be read from
+    /// </param>
+    /// <param name="destination">
+    /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+    /// </param>
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that is either:<br/>
+    /// <c>Ok(int)</c> that contains the number of characters copied<br/>
+    /// <c>Error(Exception)</c> that explains why the copy failed
+    /// </returns>
+    public static Result<int, Exception> TryCopy(string? source, Span<char> destination)
+    {
+        if (source is null)
+            return new ArgumentNullException(nameof(source));
+        int count = source.Length;
+        if (count > destination.Length)
+            return new ArgumentException($"Destination cannot contain {count} characters", nameof(destination));
+        Unsafe.CopyBlock(source, destination, count);
+        return count;
+    }
+
+#endregion
 }
