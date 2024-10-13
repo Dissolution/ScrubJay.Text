@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Text;
+﻿namespace ScrubJay.Text.Builders;
 
 /// <summary>
 /// A basic instance of a <see cref="FluentTextBuilder{B}"/>

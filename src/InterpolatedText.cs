@@ -1,161 +1,77 @@
-﻿using ScrubJay.Text.Buffers;
+﻿#pragma warning disable S3247, CA2213
+
+using ScrubJay.Collections;
 
 namespace ScrubJay.Text;
+
+[PublicAPI]
+public delegate void AppendFormatted<in T>(ref InterpolatedText text, T value, text format = default);
 
 [PublicAPI]
 [InterpolatedStringHandler]
 public ref struct InterpolatedText
 {
-    private const int DEFAULT_GROW = 64;
-    
-    private char[]? _charArray;
-    private Span<char> _charSpan;
-    private int _position;
+    private static readonly ConcurrentTypeMap<Delegate> _formatters = [];
 
-    private Span<char> Available
+    public static void AddFormatter<T>(AppendFormatted<T> formatter)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _charSpan.Slice(_position);
+        _formatters.AddOrUpdate<T>(formatter);
     }
 
-    private int Capacity
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _charSpan.Length;
-    }
 
-    public ref char this[Index index] => ref _charSpan.Slice(0, _position)[index];
+    private SpanBuffer<char> _buffer;
 
-    public Span<char> this[Range range] => _charSpan.Slice(0, _position)[range];
-    
+    public ref char this[Index index] => ref _buffer[index];
+
+    public Span<char> this[Range range] => _buffer[range];
+
     public int Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _position;
+        get => _buffer.Count;
     }
 
     public InterpolatedText()
     {
-        _charSpan = _charArray = TextPool.Rent();
-        _position = 0;
+        _buffer = new SpanBuffer<char>();
     }
-    
+
     public InterpolatedText(int literalLength, int formattedCount)
     {
-        _charSpan = _charArray = TextPool.Rent(literalLength + (formattedCount * 16));
-        _position = 0;
+        _buffer = new SpanBuffer<char>(literalLength + (formattedCount * 16));
     }
 
     public InterpolatedText(Span<char> initialBuffer)
     {
-        _charSpan = initialBuffer;
-        _charArray = null;
-        _position = 0;
-    }
-    
-      
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void GrowBy(int additionalChars)
-    {
-        char[] newArray = TextPool.Rent((_charSpan.Length + additionalChars) * 2);
-        TextHelper.Unsafe.CopyBlock(_charSpan, newArray, _position);
-
-        char[]? toReturn = _charArray;
-        _charSpan = _charArray = newArray;
-
-        TextPool.Return(toReturn);
-    }
-    
-    
-    public void AppendLiteral(char ch)
-    {
-        if (_position >= _charSpan.Length)
-        {
-            GrowBy(1);
-        }
-
-        Available[0] = ch;
-        _position += 1;
+        _buffer = new SpanBuffer<char>(initialBuffer, 0);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendLiteral(string str)
-    {
-        int pos = _position;
-        int len = str.Length;
-        int newPos = pos + len;
-        if (newPos >= Capacity)
-            GrowBy(len);
+    public void AppendLiteral(char ch) => _buffer.Add(ch);
 
-        TextHelper.Unsafe.CopyBlock(str, Available, len);
-        _position = newPos;
-    }
-    
-    public void AppendFormatted(char ch)
-    {
-        if (_position >= _charSpan.Length)
-        {
-            GrowBy(1);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendLiteral(string str) => _buffer.Add(str);
 
-        Available[0] = ch;
-        _position += 1;
-    }
-    
-    public void AppendFormatted(text txt)
-    {
-        int pos = _position;
-        int len = txt.Length;
-        int newPos = pos + len;
-        if (newPos >= Capacity)
-            GrowBy(len);
 
-        TextHelper.Unsafe.CopyBlock(txt, Available, len);
-        _position = newPos;
-    }
-    
-    public void AppendFormatted(string? str)
-    {
-        if (str is not null)
-        {
-            AppendLiteral(str);
-        }
-    }
-    
-    public void AppendFormatted<T>(T value)
-    {
-        string? str;
-        if (value is IFormattable)
-        {
-#if NET6_0_OR_GREATER
-            if (value is ISpanFormattable)
-            {
-                int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, default, default))
-                {
-                    GrowBy(DEFAULT_GROW);
-                }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendFormatted(char ch) => _buffer.Add(ch);
 
-                _position += charsWritten;
-                return;
-            }
-#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendFormatted(scoped text text) => _buffer.Add(text);
 
-            str = ((IFormattable)value).ToString(default, default);
-        }
-        else
-        {
-            str = value?.ToString();
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendFormatted(string? str) => _buffer.Add(str);
 
-        if (str is not null)
-        {
-            AppendLiteral(str);
-        }
-    }
+    public void AppendFormatted<T>(T value) => AppendFormatted<T>(value, default(text));
 
     public void AppendFormatted<T>(T value, text format)
     {
+        if (_formatters.TryGetValue<T>(out var del) && del.Is<AppendFormatted<T>>(out var appendFormatted))
+        {
+            appendFormatted(ref this, value, format);
+            return;
+        }
+
         string? str;
         if (value is IFormattable)
         {
@@ -163,12 +79,12 @@ public ref struct InterpolatedText
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, default))
+                while (!((ISpanFormattable)value).TryFormat(_buffer.Available, out charsWritten, format, default))
                 {
-                    GrowBy(DEFAULT_GROW);
+                    _buffer.Grow();
                 }
 
-                _position += charsWritten;
+                _buffer.Count += charsWritten;
                 return;
             }
 #endif
@@ -180,14 +96,17 @@ public ref struct InterpolatedText
             str = value?.ToString();
         }
 
-        if (str is not null)
-        {
-            AppendLiteral(str);
-        }
+        _buffer.AddMany(str.AsSpan());
     }
-    
+
     public void AppendFormatted<T>(T value, string? format)
     {
+        if (_formatters.TryGetValue<T>(out var del) && del.Is<AppendFormatted<T>>(out var appendFormatted))
+        {
+            appendFormatted(ref this, value, format.AsSpan());
+            return;
+        }
+
         string? str;
         if (value is IFormattable)
         {
@@ -195,12 +114,12 @@ public ref struct InterpolatedText
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, default))
+                while (!((ISpanFormattable)value).TryFormat(_buffer.Available, out charsWritten, format, default))
                 {
-                    GrowBy(DEFAULT_GROW);
+                    _buffer.Grow();
                 }
 
-                _position += charsWritten;
+                _buffer.Count += charsWritten;
                 return;
             }
 #endif
@@ -212,23 +131,19 @@ public ref struct InterpolatedText
             str = value?.ToString();
         }
 
-        if (str is not null)
-        {
-            AppendLiteral(str);
-        }
+        _buffer.Add(str);
     }
 
-    public Span<char> AsSpan() => _charSpan.Slice(0, _position);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<char> AsSpan() => _buffer.AsSpan();
 
-    public text AsText() => AsSpan();
-    
-    public void Dispose()
-    {
-        char[]? toReturn = _charArray;
-        this = default; // defensive clear
-        TextPool.Return(toReturn);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public text AsText() => _buffer.AsSpan();
 
+    [HandlesResourceDisposal]
+    public void Dispose() => _buffer.Dispose();
+
+    [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string result = this.ToString();
@@ -236,5 +151,12 @@ public ref struct InterpolatedText
         return result;
     }
 
-    public override string ToString() => AsSpan().ToString();
+    public override string ToString()
+    {
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
+        return new string(AsSpan());
+#else
+        return AsSpan().ToString();
+#endif
+    }
 }

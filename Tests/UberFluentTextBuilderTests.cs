@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Tests;
+﻿using ScrubJay.Text.Builders;
+
+namespace ScrubJay.Text.Tests;
 
 public class UberFluentTextBuilderTests
 {

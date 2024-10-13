@@ -1,8 +1,6 @@
 ﻿using Polyfills;
-using ScrubJay.Text;
-using ScrubJay.Text.Extensions;
 
-namespace ScrubJay.Text;
+namespace ScrubJay.Text.Builders;
 
 public sealed class UberTextBuilder : UberFluentTextBuilder<UberTextBuilder>
 {

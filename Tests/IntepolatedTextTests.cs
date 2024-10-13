@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace ScrubJay.Text.Tests;
+﻿namespace ScrubJay.Text.Tests;
 
 public class InterpolatedTextTests
 {

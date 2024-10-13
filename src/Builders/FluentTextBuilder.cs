@@ -1,6 +1,8 @@
-﻿// ReSharper disable MergeCastWithTypeCheck
+﻿#pragma warning disable S3247
+
+// ReSharper disable MergeCastWithTypeCheck
 // ReSharper disable ConvertIfStatementToConditionalTernaryExpression
-namespace ScrubJay.Text;
+namespace ScrubJay.Text.Builders;
 
 /// <summary>
 /// A FluentTextBuilder uses fluent operations to build up complex <see cref="string">strings</see>
@@ -137,7 +139,7 @@ public abstract class FluentTextBuilder<B> : IDisposable
         return _builder;
     }
 
-    public virtual B Format<T>(T? value, text format, IFormatProvider? provider = null)
+    public virtual B Format<T>(T? value, scoped text format, IFormatProvider? provider = null)
     {
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)

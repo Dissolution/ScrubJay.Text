@@ -6,5 +6,14 @@
 public static class CharBufferExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AddMany(this Buffer<char> buffer, string? str) => buffer.AddMany(str.AsSpan());
+    public static void Add(this Buffer<char> buffer, string? str) => buffer.AddMany(str.AsSpan());
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add(this SpanBuffer<char> buffer, string? str) => buffer.AddMany(str.AsSpan());
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add(this Buffer<char> buffer, scoped text text) => buffer.AddMany(text);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add(this SpanBuffer<char> buffer, scoped text text) => buffer.AddMany(text);
 }
