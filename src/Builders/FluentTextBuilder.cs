@@ -1,4 +1,6 @@
-﻿#pragma warning disable S3247
+﻿using ScrubJay.Fluent;
+
+#pragma warning disable S3247, CA1715, S4136
 
 // ReSharper disable MergeCastWithTypeCheck
 // ReSharper disable ConvertIfStatementToConditionalTernaryExpression
@@ -12,8 +14,8 @@ namespace ScrubJay.Text.Builders;
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public abstract class FluentTextBuilder<B> : IDisposable
-    where B : FluentTextBuilder<B>
+public abstract class FluentTextBuilder<B> : FluentBuilder<B>, IDisposable
+    where B : FluentTextBuilder<B>, new()
 {
     /// <summary>
     /// An <see cref="Action{B}"/> that applies to a <see cref="FluentTextBuilder{B}"/> <paramref name="builder"/>
@@ -30,19 +32,16 @@ public abstract class FluentTextBuilder<B> : IDisposable
     /// </summary>
     public delegate void BuilderValueIndexAction<in T>(B builder, T value, int index);
     
-    protected readonly B _builder;
     protected readonly Buffer<char> _textBuffer;
 
-    protected FluentTextBuilder()
+    protected FluentTextBuilder() : base()
     {
         _textBuffer = new();
-        _builder = (B)this;
     }
 
-    protected FluentTextBuilder(int minCapacity)
+    protected FluentTextBuilder(int minCapacity) : base()
     {
         _textBuffer = new(minCapacity);
-        _builder = (B)this;
     }
 
     /// <summary>
@@ -255,8 +254,6 @@ public abstract class FluentTextBuilder<B> : IDisposable
         
         if (del.Length == 0)
             return Enumerate(values, onBuilderValue);
-        // if (delimiter == Environment.NewLine)
-        //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
         int len = values.Length;
         if (len == 0)
             return _builder;
@@ -336,8 +333,6 @@ public abstract class FluentTextBuilder<B> : IDisposable
         text del = delimiter.AsSpan();
         if (del.Length == 0)
             return Enumerate<T>(values, onBuilderValue);
-        // if (delimiter == Environment.NewLine)
-        //     return Delimit(static b => b.NewLine(), values, onBuilderValue);
         if (values is null)
             return _builder;
         using var e = values.GetEnumerator();
@@ -404,11 +399,13 @@ public abstract class FluentTextBuilder<B> : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public text AsText() => _textBuffer.Written;
 
+    [HandlesResourceDisposal]
     public virtual void Dispose()
     {
         _textBuffer.Dispose();
     }
 
+    [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string str = this.ToString();

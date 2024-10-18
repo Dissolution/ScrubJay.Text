@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="ScrubJay.Text.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
     </ItemGroup>
     
     <!-- NuGet Packages -->

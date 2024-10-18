@@ -1,4 +1,6 @@
-﻿using static InlineIL.IL;
+﻿#pragma warning disable CA1034, CA1200
+
+using static InlineIL.IL;
 
 // ReSharper disable EntityNameCapturedOnly.Global
 
@@ -61,8 +63,10 @@ public static class TextHelper
             Emit.Ldarg(nameof(count));
             Emit.Ldc_I4_2();
             Emit.Mul();
-            //Emit.Conv_U4();
-
+            /* Though the Mul operation emits an I4, we don't have to convert to a U4 first
+             * with `Emit.Conv_U4`
+             */
+            
             // Now we can call the instruction 
             Emit.Cpblk();
         }

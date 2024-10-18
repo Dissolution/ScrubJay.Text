@@ -1,17 +1,20 @@
-﻿using Polyfills;
+﻿#pragma warning disable CA1715
+
+using Polyfills;
 
 namespace ScrubJay.Text.Builders;
-
-public sealed class UberTextBuilder : UberFluentTextBuilder<UberTextBuilder>
-{
-}
 
 public abstract class UberFluentTextBuilder<B> : FluentTextBuilder<B>
     where B : UberFluentTextBuilder<B>, new()
 {
     protected readonly WhitespaceManager _whitespace;
 
-    public UberFluentTextBuilder() : base()
+    protected UberFluentTextBuilder() : base()
+    {
+        _whitespace = new();
+    }
+
+    protected UberFluentTextBuilder(int minCapacity) : base(minCapacity)
     {
         _whitespace = new();
     }
@@ -22,14 +25,7 @@ public abstract class UberFluentTextBuilder<B> : FluentTextBuilder<B>
     {
         _whitespace.StartIndent(indent);
         indentedAction(_builder);
-#if DEBUG
-        var removed = _whitespace.TryEndIndent();
-        Debug.Assert(removed);
-        Debug.Assert(removed.IsOk(out var formerIndent));
-        Debug.Assert(formerIndent == indent.ToString());
-#else
         _whitespace.EndIndent();
-#endif
         return _builder;
     }
 

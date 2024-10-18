@@ -26,6 +26,7 @@ public class InterpolatedTextTests
     public void CanInstantiateNew()
     {
         InterpolatedText text = new();
+        
     }
 
     [Fact]

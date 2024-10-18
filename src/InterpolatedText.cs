@@ -1,4 +1,4 @@
-﻿#pragma warning disable S3247, CA2213
+﻿#pragma warning disable S3247, CA2213, MA0048
 
 using ScrubJay.Collections;
 
@@ -50,17 +50,17 @@ public ref struct InterpolatedText
     public void AppendLiteral(char ch) => _buffer.Add(ch);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendLiteral(string str) => _buffer.Add(str);
+    public void AppendLiteral(string str) => _buffer.AddMany(str.AsSpan());
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted(char ch) => _buffer.Add(ch);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(scoped text text) => _buffer.Add(text);
+    public void AppendFormatted(scoped text text) => _buffer.AddMany(text);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(string? str) => _buffer.Add(str);
+    public void AppendFormatted(string? str) => _buffer.AddMany(str.AsSpan());
 
     public void AppendFormatted<T>(T value) => AppendFormatted<T>(value, default(text));
 
@@ -131,7 +131,7 @@ public ref struct InterpolatedText
             str = value?.ToString();
         }
 
-        _buffer.Add(str);
+        _buffer.AddMany(str.AsSpan());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

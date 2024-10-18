@@ -56,4 +56,26 @@ public class UberFluentTextBuilderTests
         """;
         Assert.Equal(output, builder.ToString());
     }
+
+    private static void WriteBody(UberTextBuilder builder)
+    {
+        builder.Append("""
+        return Console.WriteLine("Hello, World!");
+        """);
+    }
+
+//     [Fact]
+//     public void ComplexInterpolationWorks()
+//     {
+//         using var builder = new UberTextBuilder();
+//         builder.Append($$"""
+//         public class TestClass()
+//         {
+//             public void DoThing()
+//             {
+//                 {{WriteBody}}
+//             }
+//         }
+//         """);
+//     }
 }

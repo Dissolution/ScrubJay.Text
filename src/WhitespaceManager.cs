@@ -58,12 +58,9 @@ public sealed class WhitespaceManager : IDisposable
         var lastIndentStart = _indentOffsets.Peek(); // will succeed
         Debug.Assert(lastIndentStart >= 0 && lastIndentStart <= _indents.Count);
         
-        if (_blockOffsets.TryPeek(out var lastBlockStart))
-        {
-            if (lastIndentStart < lastBlockStart)
-                return new InvalidOperationException("Remaining indents belong to previous block");
-        }
-        
+        if (_blockOffsets.TryPeek(out var lastBlockStart) && lastIndentStart < lastBlockStart)
+            return new InvalidOperationException("Remaining indents belong to previous block");
+
         // Remove the indent
         _indentOffsets.Pop(); // will succeed
         // capture that indent to return
