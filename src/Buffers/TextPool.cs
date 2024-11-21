@@ -9,7 +9,7 @@ namespace ScrubJay.Text.Buffers;
 public static class TextPool
 {
     private static readonly ArrayPool<char> _charArrayPool = ArrayPool<char>.Shared;
-    
+
     /// <summary>
     /// The minimum capacity of an array returned from <see cref="Rent()"/>
     /// </summary>
@@ -18,8 +18,8 @@ public static class TextPool
     /// <summary>
     /// The maximum capacity of an array returned from <see cref="Rent()"/>
     /// </summary>
-    public const int MaxCapacity = 0x3FFFFFDF; // == string.MaxLength
-    
+    public const int MaxCapacity = 0x3FFFFFDF; // == string.MaxLength, < Array.MaxLength
+
     /// <summary>
     /// Rents a <c>char[]</c> with at least a <see cref="Array.Length"/> of <see cref="MinCapacity"/>
     /// from the <see cref="char"/> <see cref="ArrayPool{T}"/>

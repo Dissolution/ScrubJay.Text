@@ -2,7 +2,7 @@
 
 public static class StringExtensions
 {
-#if NET48_OR_GREATER || NETSTANDARD2_0 || NETSTANDARD2_1
+#if NET481_OR_GREATER || NETSTANDARD2_0 || NETSTANDARD2_1
     /// <summary>
     /// Gets a pinned <c>ref readonly</c> to this <see cref="string"/>
     /// </summary>
@@ -18,5 +18,3 @@ public static class StringExtensions
     }
 #endif
 }
-
-

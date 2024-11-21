@@ -15,16 +15,16 @@ public static class CharExtensions
     /// A <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> containing the <see cref="char"/>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<char> AsSpan(this in char ch)
+    public static text AsSpan(this in char ch)
     {
 #if NET7_0_OR_GREATER
-        return new ReadOnlySpan<char>(in ch);
+        return new text(in ch);
 #else
         unsafe
         {
             fixed (char* pointer = &ch)
             {
-                return new ReadOnlySpan<char>((void*)pointer, 1);
+                return new ReadOnlySpan<char>(pointer, 1);
             }
         }
 #endif

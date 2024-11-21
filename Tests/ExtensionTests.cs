@@ -19,7 +19,7 @@ public class ExtensionTests
     [MemberData(nameof(Characters))]
     public void CharToSpanWorks(char ch)
     {
-        var span = CharExtensions.AsSpan(ch);
+        var span = ch.AsSpan();
         Assert.Equal(1, span.Length);
         Assert.Equal(ch, span[0]);
     }

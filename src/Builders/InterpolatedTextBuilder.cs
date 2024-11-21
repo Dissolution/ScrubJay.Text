@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1715
+﻿#pragma warning disable CA1715, IDE0250, IDE0251, MA0102, IDE0060, RCS1163
 
 namespace ScrubJay.Text.Builders;
 
@@ -7,22 +7,24 @@ namespace ScrubJay.Text.Builders;
 /// </summary>
 /// <typeparam name="B"></typeparam>
 [PublicAPI]
-[MustDisposeResource]
 [InterpolatedStringHandler]
 public ref struct InterpolatedTextBuilder<B>
     where B : FluentTextBuilder<B>, new()
 {
     private readonly B _builder;
-    
+
     /// <summary>
     /// Construct a new <see cref="InterpolatedTextBuilder{B}"/> that writes to a <typeparamref name="B"/> <paramref name="builder"/>
     /// </summary>
+    /// <param name="literalLength"></param>
+    /// <param name="formattedCount"></param>
+    /// <param name="builder"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public InterpolatedTextBuilder(int literalLength, int formattedCount, B builder)
     {
         _builder = builder;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendLiteral(string str) => _builder.Append(str);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,15 +34,17 @@ public ref struct InterpolatedTextBuilder<B>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted(string? str) => _builder.Append(str);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value) => _builder.Append<T>(value);
+    public void AppendFormatted<T>(T value) => _builder.Append(value);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, scoped text format) => _builder.Format<T>(value, format);
+    public void AppendFormatted<T>(T value, scoped text format) => _builder.Format(value, format);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, string? format) => _builder.Format<T>(value, format);
-    
-    [HandlesResourceDisposal]
-    public void Dispose() => _builder.Dispose();
-    [HandlesResourceDisposal]
-    public string ToStringAndDispose() => _builder.ToStringAndDispose();
+    public void AppendFormatted<T>(T value, string? format) => _builder.Format(value, format);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendFormatted(Action<B> build)
+    {
+        // pass-through to builder for execution
+        _builder.InterpolatedExecute(build);
+    }
+
     public override string ToString() => _builder.ToString();
 }

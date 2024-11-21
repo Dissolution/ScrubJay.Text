@@ -1,7 +1,7 @@
 ﻿namespace ScrubJay.Text.Builders;
 
 /// <summary>
-/// A basic instance of a <see cref="FluentTextBuilder{B}"/>
+/// An instance of a <see cref="FluentTextBuilder{B}"/>
 /// </summary>
 [PublicAPI]
 [MustDisposeResource]

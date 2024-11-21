@@ -1,7 +1,5 @@
 ﻿#pragma warning disable S3247, CA2213, MA0048
 
-using ScrubJay.Collections;
-
 namespace ScrubJay.Text;
 
 [PublicAPI]
@@ -15,11 +13,21 @@ public ref struct InterpolatedText
 
     public static void AddFormatter<T>(AppendFormatted<T> formatter)
     {
-        _formatters.AddOrUpdate<T>(formatter);
+        _ = _formatters.AddOrUpdate<T>(formatter);
+    }
+
+    public static Option<AppendFormatted<T>> TryGetFormatter<T>()
+    {
+        if (_formatters.TryGetValue<T>(out var formatter) && formatter.Is<AppendFormatted<T>>(out var appendFormatted))
+        {
+            return Some(appendFormatted);
+        }
+
+        return None();
     }
 
 
-    private SpanBuffer<char> _buffer;
+    private Buffer<char> _buffer;
 
     public ref char this[Index index] => ref _buffer[index];
 
@@ -33,17 +41,17 @@ public ref struct InterpolatedText
 
     public InterpolatedText()
     {
-        _buffer = new SpanBuffer<char>();
+        _buffer = new Buffer<char>();
     }
 
     public InterpolatedText(int literalLength, int formattedCount)
     {
-        _buffer = new SpanBuffer<char>(literalLength + (formattedCount * 16));
+        _buffer = new Buffer<char>(literalLength + (formattedCount * 16));
     }
 
     public InterpolatedText(Span<char> initialBuffer)
     {
-        _buffer = new SpanBuffer<char>(initialBuffer, 0);
+        _buffer = new Buffer<char>(initialBuffer, 0);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,13 +70,13 @@ public ref struct InterpolatedText
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted(string? str) => _buffer.AddMany(str.AsSpan());
 
-    public void AppendFormatted<T>(T value) => AppendFormatted<T>(value, default(text));
+    public void AppendFormatted<T>(T value) => AppendFormatted(value, default(text));
 
     public void AppendFormatted<T>(T value, text format)
     {
-        if (_formatters.TryGetValue<T>(out var del) && del.Is<AppendFormatted<T>>(out var appendFormatted))
+        if (TryGetFormatter<T>().HasSome(out var formatter))
         {
-            appendFormatted(ref this, value, format);
+            formatter(ref this, value, format);
             return;
         }
 
@@ -101,9 +109,9 @@ public ref struct InterpolatedText
 
     public void AppendFormatted<T>(T value, string? format)
     {
-        if (_formatters.TryGetValue<T>(out var del) && del.Is<AppendFormatted<T>>(out var appendFormatted))
+        if (TryGetFormatter<T>().HasSome(out var formatter))
         {
-            appendFormatted(ref this, value, format.AsSpan());
+            formatter(ref this, value, format.AsSpan());
             return;
         }
 
@@ -146,8 +154,8 @@ public ref struct InterpolatedText
     [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
-        string result = this.ToString();
-        this.Dispose();
+        string result = ToString();
+        Dispose();
         return result;
     }
 

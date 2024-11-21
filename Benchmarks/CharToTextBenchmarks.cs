@@ -1,6 +1,6 @@
-﻿namespace ScrubJay.Text.Benchmarks;
+﻿using BenchmarkDotNet.Attributes;
 
-using BenchmarkDotNet.Attributes;
+namespace ScrubJay.Text.Benchmarks;
 
 public class CharToTextBenchmarks
 {
