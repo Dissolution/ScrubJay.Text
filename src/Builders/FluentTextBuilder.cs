@@ -23,8 +23,8 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     IDisposable
     where B : FluentTextBuilder<B>, new()
 {
-    // This manages all of the actual writing
-    protected readonly PooledList<char> _textBuffer;
+    // This manages all the actual writing
+    protected readonly PooledList<char> _text;
 
     int ICollection<char>.Count => Length;
     bool ICollection<char>.IsReadOnly => false;
@@ -41,34 +41,34 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public ref char this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _textBuffer[index];
+        get => ref _text[index];
     }
 
     public ref char this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _textBuffer[index];
+        get => ref _text[index];
     }
 
     public Span<char> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _textBuffer[range];
+        get => _text[range];
     }
 
     /// <summary>
     /// Gets the total length of text written to this Builder
     /// </summary>
-    public int Length => _textBuffer.Count;
+    public int Length => _text.Count;
 
     protected FluentTextBuilder() : base()
     {
-        _textBuffer = new();
+        _text = new();
     }
 
     protected FluentTextBuilder(int minCapacity) : base()
     {
-        _textBuffer = new(minCapacity);
+        _text = new(minCapacity);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Append(char ch)
     {
-        _textBuffer.Add(ch);
+        _text.Add(ch);
         return _builder;
     }
     void ICollection<char>.Add(char item) => Append(item);
@@ -94,7 +94,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Append(scoped text text)
     {
-        _textBuffer.AddMany(text);
+        _text.AddMany(text);
         return _builder;
     }
 
@@ -137,12 +137,12 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is ISpanFormattable)
         {
             int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, default, default))
+            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, default, default))
             {
-                _textBuffer.Grow();
+                _text.Grow();
             }
 
-            _textBuffer.Count += charsWritten;
+            _text.Count += charsWritten;
             return _builder;
         }
 #endif
@@ -157,7 +157,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             str = value?.ToString();
         }
 
-        _textBuffer.AddMany(str.AsSpan());
+        _text.AddMany(str.AsSpan());
         return _builder;
     }
 
@@ -177,12 +177,12 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is ISpanFormattable)
         {
             int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, format, provider))
+            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
             {
-                _textBuffer.Grow();
+                _text.Grow();
             }
 
-            _textBuffer.Count += charsWritten;
+            _text.Count += charsWritten;
             return _builder;
         }
 #endif
@@ -197,7 +197,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             str = value?.ToString();
         }
 
-        _textBuffer.AddMany(str.AsSpan());
+        _text.AddMany(str.AsSpan());
         return _builder;
     }
 
@@ -217,12 +217,12 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is ISpanFormattable)
         {
             int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_textBuffer.Available, out charsWritten, format, provider))
+            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
             {
-                _textBuffer.Grow();
+                _text.Grow();
             }
 
-            _textBuffer.Count += charsWritten;
+            _text.Count += charsWritten;
             return _builder;
         }
 #endif
@@ -237,7 +237,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             str = value?.ToString();
         }
 
-        _textBuffer.AddMany(str.AsSpan());
+        _text.AddMany(str.AsSpan());
         return _builder;
     }
 
@@ -313,7 +313,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _textBuffer.Add(delimiter);
+            _text.Add(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -333,7 +333,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _textBuffer.AddMany(delimiter);
+            _text.AddMany(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -372,7 +372,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, e.Current);
         while (e.MoveNext())
         {
-            _textBuffer.Add(delimiter);
+            _text.Add(delimiter);
             onBuilderValue(_builder, e.Current);
         }
 
@@ -393,7 +393,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, e.Current);
         while (e.MoveNext())
         {
-            _textBuffer.AddMany(delimiter);
+            _text.AddMany(delimiter);
             onBuilderValue(_builder, e.Current);
         }
 
@@ -429,55 +429,55 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     #region Insertion
 
     public Result<int, Exception> TryInsert(Index index, char ch)
-        => _textBuffer.TryInsert(index, ch);
+        => _text.TryInsert(index, ch);
 
     public Result<int, Exception> TryInsert(Index index, scoped text text)
-        => _textBuffer.TryInsertMany(index, text);
+        => _text.TryInsertMany(index, text);
 
     public Result<int, Exception> TryInsert(Index index, string? str)
-        => _textBuffer.TryInsertMany(index, str.AsSpan());
+        => _text.TryInsertMany(index, str.AsSpan());
 
     void IList<char>.Insert(int index, char item)
     {
-        _textBuffer.TryInsert(index, item).ThrowIfError();
+        _text.TryInsert(index, item).ThrowIfError();
     }
 
 #endregion
 
 
     public Option<int> TryFindIndex(char ch, bool firstToLast = true, Index? offset = default, IEqualityComparer<char>? charComparer = null)
-        => _textBuffer.TryFindIndex(ch, firstToLast, offset, charComparer);
+        => _text.TryFindIndex(ch, firstToLast, offset, charComparer);
 
     public Option<int> TryFindIndex(
         scoped text text,
         bool firstToLast = true,
         Index? offset = default,
         IEqualityComparer<char>? charComparer = null)
-        => _textBuffer.TryFindIndex(text, firstToLast, offset, charComparer);
+        => _text.TryFindIndex(text, firstToLast, offset, charComparer);
 
-    bool ICollection<char>.Contains(char item) => _textBuffer.Contains(item);
+    bool ICollection<char>.Contains(char item) => _text.Contains(item);
 
-    int IList<char>.IndexOf(char item) => _textBuffer.TryFindIndex(item).SomeOr(-1);
+    int IList<char>.IndexOf(char item) => _text.TryFindIndex(item).SomeOr(-1);
 
 
     public bool TryRemoveAt(Index index)
-        => _textBuffer.TryRemoveAt(index);
+        => _text.TryRemoveAt(index);
 
     public bool TryRemoveMany(Range range)
-        => _textBuffer.TryRemoveMany(range);
+        => _text.TryRemoveMany(range);
 
     bool ICollection<char>.Remove(char item)
     {
         if (TryFindIndex(item).HasSome(out var index))
         {
-            return _textBuffer.TryRemoveAt(index);
+            return _text.TryRemoveAt(index);
         }
         return false;
     }
 
     void IList<char>.RemoveAt(int index)
     {
-        if (!_textBuffer.TryRemoveAt(index))
+        if (!_text.TryRemoveAt(index))
         {
             throw new ArgumentOutOfRangeException(nameof(index));
         }
@@ -485,41 +485,41 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
     public B RemoveLast(int count)
     {
-        _textBuffer.Count -= count;
+        _text.Count -= count;
         return _builder;
     }
 
 
     public B Clear()
     {
-        _textBuffer.Clear();
+        _text.Clear();
         return _builder;
     }
 
     void ICollection<char>.Clear() => Clear();
 
-    public bool TryCopyTo(Span<char> span) => _textBuffer.TryCopyTo(span);
+    public bool TryCopyTo(Span<char> span) => _text.TryCopyTo(span);
 
     void ICollection<char>.CopyTo(char[] array, int arrayIndex)
     {
-        Validate.CopyTo(array, arrayIndex, _textBuffer.Count).ThrowIfError();
-        _ = _textBuffer.TryCopyTo(array.AsSpan(arrayIndex));
+        Validate.CopyTo(array, arrayIndex, _text.Count).ThrowIfError();
+        _ = _text.TryCopyTo(array.AsSpan(arrayIndex));
     }
 
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public text AsText() => _textBuffer.Written;
+    public text AsText() => _text.Written;
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public IEnumerator<char> GetEnumerator() => _textBuffer.GetEnumerator();
+    public IEnumerator<char> GetEnumerator() => _text.GetEnumerator();
 
 
     [HandlesResourceDisposal]
     public virtual void Dispose()
     {
-        _textBuffer.Dispose();
+        _text.Dispose();
     }
 
     [HandlesResourceDisposal]
@@ -532,6 +532,6 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
     public override string ToString()
     {
-        return _textBuffer.ToString();
+        return _text.ToString();
     }
 }
