@@ -1,4 +1,6 @@
-﻿#pragma warning disable S3247, CA2213, MA0048
+﻿using ScrubJay.Utilities;
+
+#pragma warning disable S3247, CA2213, MA0048
 
 namespace ScrubJay.Text;
 
@@ -10,6 +12,11 @@ public delegate void AppendFormatted<in T>(ref InterpolatedText text, T value, t
 public ref struct InterpolatedText
 {
     private static readonly ConcurrentTypeMap<Delegate> _formatters = [];
+
+    static InterpolatedText()
+    {
+        AddFormatter<Type>(static (ref InterpolatedText interpolatedText, Type type, text _) => interpolatedText.AppendLiteral(type.NameOf()));
+    }
 
     public static void AddFormatter<T>(AppendFormatted<T> formatter)
     {

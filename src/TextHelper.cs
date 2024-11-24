@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1034, CA1200
+﻿#pragma warning disable CA1034, CA1200, IDE0060
 
 using static InlineIL.IL;
 
@@ -66,8 +66,8 @@ public static class TextHelper
             /* Though the Mul operation emits an I4, we don't have to convert to a U4 first
              * with `Emit.Conv_U4`
              */
-            
-            // Now we can call the instruction 
+
+            // Now we can call the instruction
             Emit.Cpblk();
         }
 
