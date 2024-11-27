@@ -21,7 +21,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     IReadOnlyCollection<char>,
     IEnumerable<char>,
     IDisposable
-    where B : FluentTextBuilder<B>, new()
+    where B : FluentTextBuilder<B>
 {
     // This manages all the actual writing
     protected readonly PooledList<char> _text;

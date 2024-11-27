@@ -49,7 +49,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.5.1-alpha</PackageVersion>
+        <PackageVersion>0.6.0-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -133,8 +133,5 @@
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>ScrubJay.Text.Benchmarks</_Parameter1>
         </AssemblyAttribute>
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Collections\" />
     </ItemGroup>
 </Project>

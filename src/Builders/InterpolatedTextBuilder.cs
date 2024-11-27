@@ -9,7 +9,7 @@ namespace ScrubJay.Text.Builders;
 [PublicAPI]
 [InterpolatedStringHandler]
 public ref struct InterpolatedTextBuilder<B>
-    where B : FluentTextBuilder<B>, new()
+    where B : FluentTextBuilder<B>
 {
     private readonly B _builder;
 
