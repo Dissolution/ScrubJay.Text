@@ -96,7 +96,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ScrubJay.Core" Version="0.9.2-alpha" />
+        <PackageReference Include="ScrubJay.Core" Version="0.10.0-alpha" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -111,11 +111,11 @@
 
     <!-- Static Code Analyzers -->
     <ItemGroup>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.180">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.181">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
