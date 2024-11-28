@@ -118,7 +118,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
-    internal virtual void InterpolatedExecute(Action<B> build)
+    protected internal virtual void InterpolatedExecute(Action<B> build)
     {
         build(_builder);
     }
