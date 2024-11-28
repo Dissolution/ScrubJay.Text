@@ -1,4 +1,6 @@
-﻿using ScrubJay.Utilities;
+﻿#pragma warning disable CS1591
+
+using ScrubJay.Utilities;
 
 #pragma warning disable S3247, CA2213, MA0048
 
@@ -15,6 +17,7 @@ public ref struct InterpolatedText
 
     static InterpolatedText()
     {
+        // Automatically use NameOf for Types
         AddFormatter<Type>(static (ref InterpolatedText interpolatedText, Type type, text _) => interpolatedText.AppendLiteral(type.NameOf()));
     }
 
