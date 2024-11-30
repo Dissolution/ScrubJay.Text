@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Builders;
+﻿#pragma warning disable CA1715
+
+namespace ScrubJay.Text.Builders;
 
 [PublicAPI]
 public static class TextBuilderExtensions
@@ -21,7 +23,7 @@ public static class TextBuilderExtensions
             return builder.Append<T>(falseValue);
     }
 
-    public static B AppendIf<B, T>(this B builder, bool condition, Action<B>? trueBuild, Action<B>? falseBuild = null)
+    public static B AppendIf<B>(this B builder, bool condition, Action<B>? trueBuild, Action<B>? falseBuild = null)
         where B : FluentTextBuilder<B>
     {
         if (condition)
