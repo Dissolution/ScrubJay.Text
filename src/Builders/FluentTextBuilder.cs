@@ -254,21 +254,21 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
 #region Enumeration
 
-    public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
-    {
-        foreach (var t in values)
-        {
-            onBuilderValue(_builder, t);
-        }
-
-        return _builder;
-    }
-
     public B Enumerate<T>(IEnumerable<T> values, Action<B, T> onBuilderValue)
     {
         foreach (var value in values)
         {
             onBuilderValue(_builder, value);
+        }
+
+        return _builder;
+    }
+
+    public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
+    {
+        foreach (var t in values)
+        {
+            onBuilderValue(_builder, t);
         }
 
         return _builder;
@@ -511,9 +511,10 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public text AsText() => _text.Written;
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_text).GetEnumerator();
+    IEnumerator<char> IEnumerable<char>.GetEnumerator() => ((IEnumerable<char>)_text).GetEnumerator();
 
-    public IEnumerator<char> GetEnumerator() => _text.GetEnumerator();
+    public Span<char>.Enumerator GetEnumerator() => _text.GetEnumerator();
 
 
     [HandlesResourceDisposal]

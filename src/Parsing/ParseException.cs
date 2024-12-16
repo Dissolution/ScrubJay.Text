@@ -16,9 +16,9 @@ public class ParseException : InvalidOperationException
         }
         else
         {
-            text.AppendLiteral('\"');
+            text.AppendFormatted('\"');
             text.AppendLiteral(input);
-            text.AppendLiteral('\"');
+            text.AppendFormatted('\"');
         }
         text.AppendLiteral(" into a ");
         text.AppendFormatted(destType);
@@ -34,9 +34,9 @@ public class ParseException : InvalidOperationException
     {
         using InterpolatedText text = new();
         text.AppendLiteral("Could not parse ");
-        text.AppendLiteral('\"');
+        text.AppendFormatted('\"');
         text.AppendFormatted(input);
-        text.AppendLiteral('\"');
+        text.AppendFormatted('\"');
         text.AppendLiteral(" into a ");
         text.AppendFormatted(destType);
         if (!string.IsNullOrEmpty(info))

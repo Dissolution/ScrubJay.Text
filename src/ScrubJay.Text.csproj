@@ -29,6 +29,7 @@
             CA1051;         <!-- Visible instance Fields -->
 
             S1939;  <!-- inheritance list -->
+            IDE0058;        <!-- -->
         </NoWarn>
     </PropertyGroup>
 
@@ -49,17 +50,18 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.6.4-alpha</PackageVersion>
+        <PackageVersion>0.6.5-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <!-- Create NuGet Package -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <!-- Generate XML documentation -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
         <None Include="..\jay.png" Pack="true" PackagePath="\"/>
@@ -77,9 +79,11 @@
         <Using Include="ScrubJay"/>
         <Using Include="ScrubJay.Buffers"/>
         <Using Include="ScrubJay.Collections"/>
+        <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.Memory"/>
         <Using Include="ScrubJay.Validation"/>
 
         <Using Include="ScrubJay.Text.Buffers"/>
@@ -90,16 +94,17 @@
     </ItemGroup>
 
     <!-- Need System.Memory for older frameworks -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="System.Memory" Version="4.6.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ScrubJay.Core" Version="0.10.1-alpha" />
+        <PackageReference Include="ScrubJay.Core" Version="0.11.1-alpha"/>
+
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-                <PackageReference Include="Fody" Version="6.9.1">
+        <PackageReference Include="Fody" Version="6.9.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -108,21 +113,21 @@
         </PackageReference>
     </ItemGroup>
 
-<!--    &lt;!&ndash; Static Code Analyzers &ndash;&gt;-->
-<!--    <ItemGroup>-->
-<!--        <PackageReference Include="Meziantou.Analyzer" Version="2.0.182">-->
-<!--            <PrivateAssets>all</PrivateAssets>-->
-<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-<!--        </PackageReference>-->
-<!--        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">-->
-<!--            <PrivateAssets>all</PrivateAssets>-->
-<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-<!--        </PackageReference>-->
-<!--        <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">-->
-<!--            <PrivateAssets>all</PrivateAssets>-->
-<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-<!--        </PackageReference>-->
-<!--    </ItemGroup>-->
+    <!--    &lt;!&ndash; Static Code Analyzers &ndash;&gt;-->
+    <!--    <ItemGroup>-->
+    <!--        <PackageReference Include="Meziantou.Analyzer" Version="2.0.182">-->
+    <!--            <PrivateAssets>all</PrivateAssets>-->
+    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+    <!--        </PackageReference>-->
+    <!--        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">-->
+    <!--            <PrivateAssets>all</PrivateAssets>-->
+    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+    <!--        </PackageReference>-->
+    <!--        <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">-->
+    <!--            <PrivateAssets>all</PrivateAssets>-->
+    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+    <!--        </PackageReference>-->
+    <!--    </ItemGroup>-->
 
     <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->
     <ItemGroup>
