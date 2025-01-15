@@ -248,21 +248,11 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public virtual B NewLine() => Append(Environment.NewLine);
 
     public B AppendLine(char ch) => Append(ch).NewLine();
-    public B AppendLine(scoped text text) => Append(text).NewLine();
+    public B AppendLine(text text) => Append(text).NewLine();
     public B AppendLine(string? str) => Append(str).NewLine();
     public B AppendLine<T>(T? value) => Append(value).NewLine();
 
-#region Enumeration
-
-    public B Enumerate<T>(IEnumerable<T> values, Action<B, T> onBuilderValue)
-    {
-        foreach (var value in values)
-        {
-            onBuilderValue(_builder, value);
-        }
-
-        return _builder;
-    }
+    #region Enumeration
 
     public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
@@ -274,9 +264,21 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
-    public B EnumerateAppend<T>(ReadOnlySpan<T> values) => Enumerate(values, static (tb, value) => tb.Append(value));
+    public B Enumerate<T>(IEnumerable<T> values, Action<B, T> onBuilderValue)
+    {
+        foreach (var value in values)
+        {
+            onBuilderValue(_builder, value);
+        }
 
-    public B EnumerateAppend<T>(IEnumerable<T> values) => Enumerate(values, static (tb, value) => tb.Append(value));
+        return _builder;
+    }
+
+    public B EnumerateAppend<T>(ReadOnlySpan<T> values) 
+        => Enumerate(values, static (tb, value) => tb.Append(value));
+
+    public B EnumerateAppend<T>(IEnumerable<T> values) 
+        => Enumerate(values, static (tb, value) => tb.Append(value));
 
 
     public B Iterate<T>(ReadOnlySpan<T> values, Action<B, T, int> onBuilderValueIndex)
@@ -301,9 +303,9 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
-#region Delimit
+    #region Delimit
 
-#region ReadOnlySpan
+    #region ReadOnlySpan
 
     public B Delimit<T>(char delimiter, ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
@@ -313,7 +315,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _text.Add(delimiter);
+            Append(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -333,7 +335,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         onBuilderValue(_builder, values[0]);
         for (var i = 1; i < len; i++)
         {
-            _text.AddMany(delimiter);
+            Append(delimiter);
             onBuilderValue(_builder, values[i]);
         }
 
@@ -360,9 +362,9 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public B DelimitAppend<T>(scoped text delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(Action<B> onDelimit, ReadOnlySpan<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
 
-#endregion
+    #endregion
 
-#region IEnumerable
+    #region IEnumerable
 
     public B Delimit<T>(char delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
     {
@@ -420,11 +422,11 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public B DelimitAppend<T>(scoped text delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(Action<B> onDelimit, IEnumerable<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
 
     #region Insertion
 
@@ -442,7 +444,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         _text.TryInsert(index, item).ThrowIfError();
     }
 
-#endregion
+    #endregion
 
 
     public Option<int> TryFindIndex(char ch, bool firstToLast = true, Index? offset = default, IEqualityComparer<char>? charComparer = null)
