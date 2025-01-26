@@ -4,12 +4,16 @@
         <RootNamespace>ScrubJay.Text</RootNamespace>
         <AssemblyName>ScrubJay.Text</AssemblyName>
 
-        <!-- All currently supported frameworks + .net Standard 2.0 so this library can be used by Source Generators -->
-        <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
-        <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
+        <!-- Intended to support all Lastest Versions -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
+        <!-- and .NET Standard 2.0 (so this library may be referenced by Source Generators) -->
+        <!-- and some out of support frameworks caught in the middle of features -->
         <TargetFrameworks>
-            net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0;net481;
+            net9.0;net8.0;netstandard2.1;netcoreapp3.1;net481;
+            netstandard2.0;
+            net7.0;net6.0;net5.0;
         </TargetFrameworks>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
         <!-- Always use the latest features -->
         <LangVersion>latest</LangVersion>
@@ -50,7 +54,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.7.0-alpha</PackageVersion>
+        <PackageVersion>0.8.0-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -99,7 +103,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ScrubJay.Core" Version="0.12.1-alpha" />
+        <PackageReference Include="ScrubJay.Core" Version="0.13.1-alpha" />
 
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>

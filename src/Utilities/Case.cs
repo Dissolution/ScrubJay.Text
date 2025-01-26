@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using ScrubJay.Memory;
+using ScrubJay.Utilities;
 
 namespace ScrubJay.Text.Utilities;
 

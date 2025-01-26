@@ -38,6 +38,10 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
             return;
         }
 
+        string str = _text.ToString();
+        int dbgIndex = i + newLine.Length;
+        string dbStr = str.Substring(dbgIndex);
+
         var indent = _text.Slice(i + newLine.Length).ToString();
         // We need to start a new indent from this point
         Whitespace newWhiteSpace = new Whitespace();
@@ -160,7 +164,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
             // Newline (which will start indented)
             .NewLine()
             // write the block code
-            .Execute(blockCode)
+            .Invoke(blockCode)
             // If we're on the start of a newline
             .ExecuteIf(IsOnStartOfNewLine(),
                 // Remove the excess indent, decrement the indent

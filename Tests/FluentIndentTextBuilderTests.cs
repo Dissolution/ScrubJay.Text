@@ -120,7 +120,7 @@ public class FluentIndentTextBuilderTests
 
     private static void WriteBody(FluentIndentTextBuilder builder)
     {
-        builder.Delimit(b => b.NewLine(), Enumerable.Range(0, 10), (b, i) => b.Append(i));
+        builder.Delimit(static b => b.NewLine(), Enumerable.Range(0, 10), static (b, i) => b.Append(i));
     }
 
     [Fact]
@@ -157,6 +157,7 @@ public class FluentIndentTextBuilderTests
             }
             """;
 
-        Assert.Equal(output, builder.ToString());
+        string builderString = builder.ToString();
+        Assert.Equal(output, builderString);
     }
 }

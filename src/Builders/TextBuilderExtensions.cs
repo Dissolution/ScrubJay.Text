@@ -33,9 +33,9 @@ public static class TextBuilderExtensions
         where B : FluentTextBuilder<B>
     {
         if (condition)
-            return builder.Execute(trueBuild);
+            return builder.Invoke(trueBuild);
         else
-            return builder.Execute(falseBuild);
+            return builder.Invoke(falseBuild);
     }
 
     public static B AppendIfOk<B, O, E>(this B builder, Result<O, E> result)
@@ -71,7 +71,7 @@ public static class TextBuilderExtensions
     public static B ExecuteIf<B>(this B builder, bool condition, Action<B>? trueBuild, Action<B>? falseBuild = null)
         where B : FluentTextBuilder<B>
     {
-        return condition ? builder.Execute(trueBuild) : builder.Execute(falseBuild);
+        return condition ? builder.Invoke(trueBuild) : builder.Invoke(falseBuild);
     }
 
     public delegate void BuildEnumeratedSplitValue<B, T>(B builder, ReadOnlySpan<T> segment)
