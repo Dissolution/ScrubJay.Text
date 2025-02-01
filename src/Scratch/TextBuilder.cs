@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Scratch;
+﻿using ScrubJay.Text.Utilities;
+
+namespace ScrubJay.Text.Scratch;
 
 public delegate void TBA(TextBuilder buildText);
 public delegate void TBVA<T>(TextBuilder buildText, T value);

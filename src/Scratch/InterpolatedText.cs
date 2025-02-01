@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Scratch;
+﻿using ScrubJay.Text.Utilities;
+
+namespace ScrubJay.Text.Scratch;
 
 [InterpolatedStringHandler]
 public ref struct InterpolatedText

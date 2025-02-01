@@ -1,8 +1,7 @@
 ﻿using static InlineIL.IL;
-using ScrubJay.Text.Extensions;
 // ReSharper disable EntityNameCapturedOnly.Global
 
-namespace ScrubJay.Text;
+namespace ScrubJay.Text.Utilities;
 
 public static class TextHelper
 {
@@ -229,205 +228,88 @@ public static class TextHelper
             CopyBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
     }
+    
+    public static Result TryCopyTo(char source, [AllowNull, NotNullWhen(true)] char[]? dest)
+    {
+        if (dest is null)
+            return new ArgumentNullException(nameof(dest));
+        if (dest.Length == 0)
+            return new ArgumentException("Destination must have a capacity of at least 1", nameof(dest));
+        Unsafe.CopyBlock(
+            in source,
+            ref dest.GetPinnableReference(),
+            1);
+        return Ok();
+    }
+    
+    public static Result TryCopyTo(char source, scoped Span<char> dest)
+    {
+        if (dest.Length == 0)
+            return new ArgumentException("Destination must have a capacity of at least 1", nameof(dest));
+        Unsafe.CopyBlock(
+            in source,
+            ref dest.GetPinnableReference(),
+            1);
+        return Ok();
+    }
+    
+    public static Result TryCopyTo([AllowNull, NotNullWhen(true)] char[]? source, [AllowNull, NotNullWhen(true)] char[]? dest)
+    {
+        if (source is null)
+            return new ArgumentNullException(nameof(source));
+        if (dest is null)
+            return new ArgumentNullException(nameof(dest));
+        int sourceLen = source.Length;
+        if (sourceLen == 0) return Ok();
+        if (sourceLen > dest.Length)
+            return new ArgumentException("Destination must be at least as large as Source", nameof(dest));
+        Unsafe.CopyBlock(
+            in source.GetPinnableReference(),
+            ref dest.GetPinnableReference(),
+            sourceLen);
+        return Ok();
+    }
+    
+    public static Result TryCopyTo([AllowNull, NotNullWhen(true)] char[]? source, scoped Span<char> dest)
+    {
+        if (source is null)
+            return new ArgumentNullException(nameof(source));
+        int sourceLen = source.Length;
+        if (sourceLen == 0) return Ok();
+        if (sourceLen > dest.Length)
+            return new ArgumentException("Destination must be at least as large as Source", nameof(dest));
+        Unsafe.CopyBlock(
+            in source.GetPinnableReference(),
+            ref dest.GetPinnableReference(),
+            sourceLen);
+        return Ok();
+    }
+    
+    public static Result TryCopyTo(scoped text source, [AllowNull, NotNullWhen(true)] char[]? dest)
+    {
+        if (dest is null)
+            return new ArgumentNullException(nameof(dest));
+        int sourceLen = source.Length;
+        if (sourceLen == 0) return Ok();
+        if (sourceLen > dest.Length)
+            return new ArgumentException("Destination must be at least as large as Source", nameof(dest));
+        Unsafe.CopyBlock(
+            in source.GetPinnableReference(),
+            ref dest.GetPinnableReference(),
+            sourceLen);
+        return Ok();
+    }
+    
+    public static Result TryCopyTo(scoped text source, scoped Span<char> dest)
+    {
+        int sourceLen = source.Length;
+        if (sourceLen == 0) return Ok();
+        if (sourceLen > dest.Length)
+            return new ArgumentException("Destination must be at least as large as Source", nameof(dest));
+        Unsafe.CopyBlock(
+            in source.GetPinnableReference(),
+            ref dest.GetPinnableReference(),
+            sourceLen);
+        return Ok();
+    }
 }
-
-/*
-#region CopyTo
-    private static string GetExMessage<TSource, TDest>(TSource? source, TDest? dest)
-    {
-        var message = new StringBuilder()
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(char[]? source, char[]? dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException($"Cannot copy source char[{source?.Length}] \"{source}\" to destination char[{dest?.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(ReadOnlySpan<char> source, char[]? dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException(Interpolate($"Cannot copy source ReadOnlySpan<char> \"{source}\" [{source.Length}] to destination char[{dest?.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(string? source, char[]? dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException(Interpolate($"Cannot copy source string \"{source}\" [{source.Length}] to destination char[{dest?.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(char[]? source, Span<char> dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException(Interpolate($"Cannot copy source char[{source!.Length}] \"{source}\" to destination Span<char>[{dest.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(ReadOnlySpan<char> source, Span<char> dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException(Interpolate($"Cannot copy source ReadOnlySpan<char> \"{source}\" [{source.Length}] to destination Span<char>[{dest.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Copies the <paramref name="source"/> text to <paramref name="dest"/>
-    /// </summary>
-    public static void CopyTo(string? source, Span<char> dest)
-    {
-        if (!TryCopyTo(source, dest))
-        {
-            throw new InvalidOperationException(Interpolate($"Cannot copy source string \"{source}\" [{source?.Length}] to destination Span<char>[{dest.Length}]"));
-        }
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo([NotNullWhen(false)] char[]? source, char[]? dest)
-    {
-        if (source is null)
-            return true;
-
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (dest is null)
-            return false;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo(scoped ReadOnlySpan<char> source, char[]? dest)
-    {
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (dest is null)
-            return false;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo([NotNullWhen(false)] string? source, char[]? dest)
-    {
-        if (source is null)
-            return true;
-
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (dest is null)
-            return false;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo([NotNullWhen(false)] char[]? source, Span<char> dest)
-    {
-        if (source is null)
-            return true;
-
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo(scoped ReadOnlySpan<char> source, Span<char> dest)
-    {
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-
-    /// <summary>
-    /// Try to copy the text in <paramref name="source"/> to <paramref name="dest"/>
-    /// </summary>
-    public static bool TryCopyTo(string? source, Span<char> dest)
-    {
-        if (source is null)
-            return true;
-
-        var sourceLen = source.Length;
-        if (sourceLen == 0)
-            return true;
-        if (sourceLen > dest.Length)
-            return false;
-
-        Unsafe.CopyBlock(
-            source,
-            dest,
-            sourceLen);
-        return true;
-    }
-#endregion
-  */
