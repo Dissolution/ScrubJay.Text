@@ -133,6 +133,16 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Append<T>(T? value)
     {
+        if (value is null)
+        {
+            return _builder;
+        }
+        
+        if (value is IAppendable)
+        {
+            return ((IAppendable)value).AppendTo(_builder);
+        }
+        
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -146,18 +156,18 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-
-        string? str;
+        
+        text str;
         if (value is IFormattable)
         {
-            str = ((IFormattable)value).ToString(default, default);
+            str = ((IFormattable)value).ToString(default, default).AsSpan();
         }
         else
         {
-            str = value?.ToString();
+            str = value.ToString().AsSpan();
         }
-
-        _text.AddMany(str.AsSpan());
+        
+        _text.AddMany(str);
         return _builder;
     }
 
@@ -173,6 +183,16 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Format<T>(T? value, string? format, IFormatProvider? provider = null)
     {
+        if (value is null)
+        {
+            return _builder;
+        }
+        
+        if (value is IAppendable)
+        {
+            return ((IAppendable)value).AppendTo(_builder);
+        }
+        
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -186,18 +206,18 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-
-        string? str;
+        
+        text str;
         if (value is IFormattable)
         {
-            str = ((IFormattable)value).ToString(format, provider);
+            str = ((IFormattable)value).ToString(format, provider).AsSpan();
         }
         else
         {
-            str = value?.ToString();
+            str = value.ToString().AsSpan();
         }
-
-        _text.AddMany(str.AsSpan());
+        
+        _text.AddMany(str);
         return _builder;
     }
 
@@ -213,6 +233,16 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Format<T>(T? value, scoped text format, IFormatProvider? provider = null)
     {
+        if (value is null)
+        {
+            return _builder;
+        }
+        
+        if (value is IAppendable)
+        {
+            return ((IAppendable)value).AppendTo(_builder);
+        }
+        
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -226,18 +256,18 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-
-        string? str;
+        
+        text str;
         if (value is IFormattable)
         {
-            str = ((IFormattable)value).ToString(format.ToString(), provider);
+            str = ((IFormattable)value).ToString(format.AsString(), provider).AsSpan();
         }
         else
         {
-            str = value?.ToString();
+            str = value.ToString().AsSpan();
         }
-
-        _text.AddMany(str.AsSpan());
+        
+        _text.AddMany(str);
         return _builder;
     }
 

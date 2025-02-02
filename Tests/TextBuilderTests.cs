@@ -12,14 +12,14 @@ namespace ScrubJay.Text.Tests;
 
 public class TextBuilderTests
 {
-    public const string SHORT_STRING = "TRJ";
-    public const string LONG_STRING = "Sphinx of Black Quartz, Judge My Vow.";
+    public const string ShortString = "TRJ";
+    public const string LongString = "Sphinx of Black Quartz, Judge My Vow.";
 
     [Fact]
     public void CanRefIndex()
     {
         using var text = TextBuilder.New;
-        text.Append(LONG_STRING);
+        text.Append(LongString);
 
         ref char ch = ref text[5];
         Assert.Equal('x', ch);
@@ -40,7 +40,7 @@ public class TextBuilderTests
     public void CanSpanRange()
     {
         using var text = TextBuilder.New;
-        text.Append(LONG_STRING);
+        text.Append(LongString);
 
         Span<char> slice = text[24..29];
         Assert.Equal("Judge", slice.AsString());
@@ -57,11 +57,11 @@ public class TextBuilderTests
     public void CanReadLength()
     {
         using var text = new TextBuilder();
-        
+
         Assert.Equal(0, text.Length);
-        text.Append(SHORT_STRING);
+        text.Append(ShortString);
         Assert.Equal(3, text.Length);
-        text.Append(SHORT_STRING);
+        text.Append(ShortString);
         Assert.Equal(6, text.Length);
         text.RemoveLast(5);
         Assert.Equal(1, text.Length);
@@ -74,16 +74,16 @@ public class TextBuilderTests
     {
         {
             var text = new TextBuilder();
-            text?.Dispose();
+            text.Dispose();
         }
         {
             var text = TextBuilder.New;
-            text?.Dispose();
+            text.Dispose();
         }
         {
             var text = new TextBuilder(ushort.MaxValue);
-            text?.Dispose();
-        }     
+            text.Dispose();
+        }
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class TextBuilderTests
     public void CanAppendString()
     {
         using var text = new TextBuilder();
-       
+
         text.Append("eat");
         Assert.Equal("eat", text.ToString());
 
@@ -148,7 +148,7 @@ public class TextBuilderTests
         object? objNull = null;
         object? objChar = 'j';
         object? objDouble = 147.13d;
-        object? objPair = Pair.New(SHORT_STRING, StringComparison.Ordinal);
+        object? objPair = Pair.New(ShortString, StringComparison.Ordinal);
 
         Assert.Equal(0, text.Length);
         text.Append<object>(objNull);
@@ -162,7 +162,7 @@ public class TextBuilderTests
         text.Clear();
 
         text.Append<object>(objPair);
-        Assert.Equal($"({SHORT_STRING}, Ordinal)", text.ToString());
+        Assert.Equal($"({ShortString}, Ordinal)", text.ToString());
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class TextBuilderTests
         Assert.Equal("147.1", text.ToString());
         text.Clear();
 
-        DateTime xmas = new DateTime(2000, 12, 25, 8,0,0,0, DateTimeKind.Local);     
+        DateTime xmas = new DateTime(2000, 12, 25, 8,0,0,0, DateTimeKind.Local);
         text.Format(xmas, "yyyy-MM-dd HH:mm:ss");
         Assert.Equal("2000-12-25 08:00:00", text.ToString());
     }
@@ -201,12 +201,12 @@ public class TextBuilderTests
     {
         using var text = new TextBuilder();
 
-        IEnumerable<char> values = SHORT_STRING.ToCharArray();
+        IEnumerable<char> values = ShortString.ToCharArray();
         text.Enumerate<char>(values, static (tb, ch) => tb.Append(ch).Append('_'));
         Assert.Equal("T_R_J_", text.ToString());
         text.Clear();
 
-        ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
+        ReadOnlySpan<char> span = ShortString.AsSpan();
         text.Enumerate<char>(span, static (tb,ch) => tb.Append(ch).Append('_'));
         Assert.Equal("T_R_J_", text.ToString());
     }
@@ -216,12 +216,12 @@ public class TextBuilderTests
     {
         using var text = new TextBuilder();
 
-        IEnumerable<char> values = SHORT_STRING.ToCharArray();
+        IEnumerable<char> values = ShortString.ToCharArray();
         text.Iterate<char>(values, static (tb, ch, i) => tb.Append(i).Append(ch));
         Assert.Equal("0T1R2J", text.ToString());
         text.Clear();
 
-        ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
+        ReadOnlySpan<char> span = ShortString.AsSpan();
         text.Iterate<char>(span, static (tb, ch, i) => tb.Append(i).Append(ch));
         Assert.Equal("0T1R2J", text.ToString());
     }
@@ -231,7 +231,7 @@ public class TextBuilderTests
     {
         using var text = new TextBuilder();
 
-        IEnumerable<char> values = SHORT_STRING.ToCharArray();
+        IEnumerable<char> values = ShortString.ToCharArray();
         text.Delimit<char>(',', values, static (tb, ch) => tb.Append(ch));
         Assert.Equal("T,R,J", text.ToString());
         text.Clear();
@@ -242,7 +242,7 @@ public class TextBuilderTests
         Assert.Equal("T-R-J", text.ToString());
         text.Clear();
 
-        ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
+        ReadOnlySpan<char> span = ShortString.AsSpan();
         text.Delimit<char>(',', span, static (tb, ch) => tb.Append(ch));
         Assert.Equal("T,R,J", text.ToString());
         text.Clear();
