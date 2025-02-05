@@ -7,44 +7,67 @@ namespace ScrubJay.Text.Builders;
 [PublicAPI]
 public static class TextBuilderExtensions
 {
-    public static B AppendName<B>(this B builder, Type? type)
+    public static B AppendType<B>(this B builder, Type? type)
         where B : FluentTextBuilder<B>
         => builder.Append(type.NameOf());
 
+#region AppendIf
     public static B AppendIf<B, T>(this B builder, bool condition, T trueValue)
         where B : FluentTextBuilder<B>
     {
         if (condition)
+        {
             return builder.Append<T>(trueValue);
+        }
         else
+        {
             return builder;
+        }
     }
 
-    public static B AppendIf<B, T>(this B builder, bool condition, T trueValue, T falseValue)
+    public static B AppendIf<B, T>(this B builder, bool condition,
+        T trueValue,
+        T falseValue)
         where B : FluentTextBuilder<B>
     {
         if (condition)
+        {
             return builder.Append<T>(trueValue);
+        }
         else
+        {
             return builder.Append<T>(falseValue);
+        }
     }
 
-    public static B AppendIf<B>(this B builder, bool condition, Action<B>? trueBuild, Action<B>? falseBuild = null)
+    public static B AppendIf<B>(this B builder, bool condition,
+        Action<B>? trueBuild,
+        Action<B>? falseBuild = null)
         where B : FluentTextBuilder<B>
     {
         if (condition)
+        {
             return builder.Invoke(trueBuild);
+        }
         else
+        {
             return builder.Invoke(falseBuild);
+        }
     }
 
     public static B AppendIfOk<B, O, E>(this B builder, Result<O, E> result)
         where B : FluentTextBuilder<B>
     {
-        return result.HasOk(out var ok) ? builder.Append<O>(ok) : builder;
+        if (result.HasOk(out var ok))
+        {
+            return builder.Append(ok);
+        }
+        return builder;
     }
 
-    public static B AppendIf<B, O, E>(this B builder, Result<O, E> result, Action<B, O>? okBuild, Action<B,E>? errorBuild = null)
+    public static B AppendIf<B, O, E>(this B builder, Result<O, E> result,
+        Action<B, O>? okBuild,
+        Action<B, E>? errorBuild = null)
         where B : FluentTextBuilder<B>
     {
         result.Match(
@@ -56,19 +79,33 @@ public static class TextBuilderExtensions
     public static B AppendIfSome<B, T>(this B builder, Option<T> option)
         where B : FluentTextBuilder<B>
     {
-        return option.HasSome(out var some) ? builder.Append<T>(some) : builder;
-    }
-
-    public static B AppendIf<B, T>(this B builder, Option<T> option, Action<B, T>? someBuild)
-        where B : FluentTextBuilder<B>
-    {
         if (option.HasSome(out var some))
-            someBuild?.Invoke(builder, some);
+        {
+            return builder.Append<T>(some);
+        }
         return builder;
     }
 
+    public static B AppendIf<B, T>(this B builder, Option<T> option,
+        Action<B, T>? someBuild,
+        Action<B, None>? noneBuild = null)
+        where B : FluentTextBuilder<B>
+    {
+        if (option.HasSome(out var some))
+        {
+            someBuild?.Invoke(builder, some);
+        }
+        else
+        {
+            noneBuild?.Invoke(builder, default);
+        }
+        return builder;
+    }
+#endregion
 
-    public static B ExecuteIf<B>(this B builder, bool condition, Action<B>? trueBuild, Action<B>? falseBuild = null)
+    public static B InvokeIf<B>(this B builder, bool condition,
+        Action<B>? trueBuild,
+        Action<B>? falseBuild = null)
         where B : FluentTextBuilder<B>
     {
         return condition ? builder.Invoke(trueBuild) : builder.Invoke(falseBuild);
@@ -77,6 +114,7 @@ public static class TextBuilderExtensions
     public delegate void BuildEnumeratedSplitValue<B, T>(B builder, ReadOnlySpan<T> segment)
         where B : FluentTextBuilder<B>
         where T : IEquatable<T>;
+
     public delegate void BuildEnumeratedSplitValueIndex<B, T>(B builder, ReadOnlySpan<T> segment, int index)
         where B : FluentTextBuilder<B>
         where T : IEquatable<T>;

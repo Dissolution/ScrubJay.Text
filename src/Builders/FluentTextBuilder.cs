@@ -138,9 +138,10 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
         
-        if (value is IAppendable)
+        if (value is IWriteable)
         {
-            return ((IAppendable)value).AppendTo(_builder);
+            ((IWriteable)value).WriteTo(_builder);
+            return _builder;
         }
         
 #if NET6_0_OR_GREATER
@@ -188,9 +189,10 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
         
-        if (value is IAppendable)
+        if (value is IWriteable)
         {
-            return ((IAppendable)value).AppendTo(_builder);
+            ((IWriteable)value).WriteTo(_builder);
+            return _builder;
         }
         
 #if NET6_0_OR_GREATER
@@ -238,9 +240,10 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
         
-        if (value is IAppendable)
+        if (value is IWriteable)
         {
-            return ((IAppendable)value).AppendTo(_builder);
+            ((IWriteable)value).WriteTo(_builder);
+            return _builder;
         }
         
 #if NET6_0_OR_GREATER
@@ -534,7 +537,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
     void ICollection<char>.CopyTo(char[] array, int arrayIndex)
     {
-        Validate.CopyTo(array, arrayIndex, _text.Count).ThrowIfError();
+        Validate.CanCopyTo(array, arrayIndex, _text.Count).ThrowIfError();
         _ = _text.TryCopyTo(array.AsSpan(arrayIndex));
     }
 

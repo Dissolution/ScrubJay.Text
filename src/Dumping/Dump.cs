@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using ScrubJay.Text.Builders;
 using ScrubJay.Utilities;
 
 namespace ScrubJay.Text.Dumping;
@@ -13,30 +12,30 @@ public static class Dump
         {
             null => builder,
             EventInfo eventInfo => builder
-                .AppendName(eventInfo.EventHandlerType)
+                .AppendType(eventInfo.EventHandlerType)
                 .Append(' ')
-                .AppendIf(includeOwner, b => b.AppendName(eventInfo.DeclaringType).Append('.'))
+                .AppendIf(includeOwner, b => b.AppendType(eventInfo.DeclaringType).Append('.'))
                 .Append(eventInfo.Name),
             ConstructorInfo constructorInfo => builder
-                .AppendName(constructorInfo.DeclaringType)
-                .Append('(').Delimit(", ", constructorInfo.GetParameters(), (b, p) => b.AppendName(p.ParameterType)).Append(')'),
+                .AppendType(constructorInfo.DeclaringType)
+                .Append('(').Delimit(", ", constructorInfo.GetParameters(), (b, p) => b.AppendType(p.ParameterType)).Append(')'),
             FieldInfo fieldInfo => builder
-                .AppendName(fieldInfo.FieldType)
+                .AppendType(fieldInfo.FieldType)
                 .Append(' ')
-                .AppendIf(includeOwner, b => b.AppendName(fieldInfo.DeclaringType).Append('.'))
+                .AppendIf(includeOwner, b => b.AppendType(fieldInfo.DeclaringType).Append('.'))
                 .Append(fieldInfo.Name),
             MethodInfo methodInfo => builder
-                .AppendName(methodInfo.ReturnType)
+                .AppendType(methodInfo.ReturnType)
                 .Append(' ')
-                .AppendIf(includeOwner, b => b.AppendName(methodInfo.DeclaringType).Append('.'))
+                .AppendIf(includeOwner, b => b.AppendType(methodInfo.DeclaringType).Append('.'))
                 .Append(methodInfo.Name)
-                .Append('(').Delimit(", ", methodInfo.GetParameters(), (b, p) => b.AppendName(p.ParameterType)).Append(')'),
+                .Append('(').Delimit(", ", methodInfo.GetParameters(), (b, p) => b.AppendType(p.ParameterType)).Append(')'),
             PropertyInfo propertyInfo => builder
-                .AppendName(propertyInfo.PropertyType)
+                .AppendType(propertyInfo.PropertyType)
                 .Append(' ')
-                .AppendIf(includeOwner, b => b.AppendName(propertyInfo.DeclaringType).Append('.'))
+                .AppendIf(includeOwner, b => b.AppendType(propertyInfo.DeclaringType).Append('.'))
                 .Append(propertyInfo.Name),
-            Type type => builder.AppendName(type),
+            Type type => builder.AppendType(type),
             _ => throw new ArgumentOutOfRangeException(nameof(member)),
         };
     }
@@ -65,7 +64,7 @@ public static class Dump
             .Append(typeName)
             .Append(": ")
             .Append(value)
-            .ExecuteIf(
+            .InvokeIf(
                 members.Count > 0, mb => mb.Block(
                     pb => pb.Delimit(b => b.NewLine(),
                         members, (b, prop) =>

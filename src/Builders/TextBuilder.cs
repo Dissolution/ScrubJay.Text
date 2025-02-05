@@ -7,7 +7,9 @@
 [MustDisposeResource]
 public sealed class TextBuilder : FluentTextBuilder<TextBuilder>, IDisposable
 {
-
+    /// <summary>
+    /// Gets a <c>new</c> <see cref="TextBuilder"/> instance
+    /// </summary>
     public static TextBuilder New
     {
         [MustDisposeResource]

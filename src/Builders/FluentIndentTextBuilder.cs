@@ -166,7 +166,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
             // write the block code
             .Invoke(blockCode)
             // If we're on the start of a newline
-            .ExecuteIf(IsOnStartOfNewLine(),
+            .InvokeIf(IsOnStartOfNewLine(),
                 // Remove the excess indent, decrement the indent
                 b => b.RemoveLast(4).RemoveIndent(),
                 // otherwise remove the indent and start a new line

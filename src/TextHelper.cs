@@ -52,22 +52,13 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CpBlk(in char source, ref char destination, int count)
         {
-            // Cpblk wants the destination pointer first
-            Emit.Ldarg(nameof(destination));
-
-            // Then the source
-            Emit.Ldarg(nameof(source));
-
-            // We need a total byte count
-            // sizeof(char) == 2 (bytes)
+            Emit.Ldarg(nameof(destination));    // dest ptr
+            Emit.Ldarg(nameof(source));         // src ptr
+            // Total byte count == (sizeof(char) * count) == 2*count 
             Emit.Ldarg(nameof(count));
             Emit.Ldc_I4_2();
             Emit.Mul();
-            /* Though the Mul operation emits an I4, we don't have to convert to a U4 first
-             * with `Emit.Conv_U4`
-             */
-
-            // Now we can call the instruction
+            // Cpblk -> takes dest*, source*, uint byteCount
             Emit.Cpblk();
         }
 

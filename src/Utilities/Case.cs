@@ -2,7 +2,6 @@
 #pragma warning disable CA1716
 
 using System.Globalization;
-using ScrubJay.Memory;
 using ScrubJay.Utilities;
 
 namespace ScrubJay.Text.Utilities;
@@ -102,20 +101,13 @@ public static class CaseExtensions
                 int len = text.Length;
                 if (len == 0)
                     return "";
-                string name;
-                if (!char.IsLower(text[0]))
-                {
-                    Span<char> nameBuffer = stackalloc char[len];
-                    nameBuffer[0] = _textInfo.ToLower(text[0]);
-                    Sequence.CopyTo(text.AsSpan(1), nameBuffer.Slice(1));
-                    name = nameBuffer.ToString();
-                }
-                else
-                {
-                    name = text;
-                }
-
-                return name;
+                if (char.IsLower(text[0]))
+                    return text;
+                
+                Span<char> nameBuffer = stackalloc char[len];
+                nameBuffer[0] = _textInfo.ToLower(text[0]);
+                Sequence.CopyTo(text.AsSpan(1), nameBuffer.Slice(1));
+                return nameBuffer.ToString();
             }
             case Case.Pascal:
             {
@@ -124,6 +116,7 @@ public static class CaseExtensions
                     return "";
                 if (char.IsUpper(text[0]))
                     return text;
+                
                 Span<char> nameBuffer = stackalloc char[len];
                 nameBuffer[0] = _textInfo.ToUpper(text[0]);
                 text.AsSpan(1).CopyTo(nameBuffer.Slice(1));
