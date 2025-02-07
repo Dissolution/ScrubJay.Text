@@ -1,4 +1,5 @@
 ﻿using ScrubJay.Fluent;
+using ScrubJay.Text.Utilities;
 
 #pragma warning disable S3247, CA1715, S4136, RCS1220, CA1033, CA1710
 
@@ -137,13 +138,13 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             return _builder;
         }
-        
+
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
             return _builder;
         }
-        
+
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -157,7 +158,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-        
+
         text str;
         if (value is IFormattable)
         {
@@ -167,7 +168,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             str = value.ToString().AsSpan();
         }
-        
+
         _text.AddMany(str);
         return _builder;
     }
@@ -188,13 +189,13 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             return _builder;
         }
-        
+
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
             return _builder;
         }
-        
+
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -208,7 +209,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-        
+
         text str;
         if (value is IFormattable)
         {
@@ -218,7 +219,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             str = value.ToString().AsSpan();
         }
-        
+
         _text.AddMany(str);
         return _builder;
     }
@@ -239,13 +240,13 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             return _builder;
         }
-        
+
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
             return _builder;
         }
-        
+
 #if NET6_0_OR_GREATER
         if (value is ISpanFormattable)
         {
@@ -259,7 +260,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
             return _builder;
         }
 #endif
-        
+
         text str;
         if (value is IFormattable)
         {
@@ -269,7 +270,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         {
             str = value.ToString().AsSpan();
         }
-        
+
         _text.AddMany(str);
         return _builder;
     }
@@ -281,12 +282,214 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public virtual B NewLine() => Append(Environment.NewLine);
 
     public B AppendLine(char ch) => Append(ch).NewLine();
-    public B AppendLine(text text) => Append(text).NewLine();
+    public B AppendLine(scoped text text) => Append(text).NewLine();
     public B AppendLine(string? str) => Append(str).NewLine();
     public B AppendLine<T>(T? value) => Append(value).NewLine();
+    public B AppendLine([InterpolatedStringHandlerArgument("")] ref InterpolatedTextBuilder<B> interpolatedTextBuilder)
+        => NewLine();
+#region Align
+  
 
-    #region Enumeration
+    public B Align(
+        char ch,
+        int width,
+        char paddingChar = ' ',
+        Alignment alignment = Alignment.None)
+        => Align(ch.AsSpan(), width, paddingChar, alignment);
+    
+    public B Align(
+        scoped text text,
+        int width,
+        char paddingChar = ' ',
+        Alignment alignment = Alignment.None)
+    {
+        // if no alignment is specified, we use -width as Left, +width as Right (same as string.Format)
+        if (alignment == Alignment.None)
+        {
+            if (width < 0)
+            {
+                alignment = Alignment.Left;
+                width = -width;
+            }
+            else
+            {
+                alignment = Alignment.Right;
+            }
+        }
 
+        // calculate the amount of padding we have to add
+        var padding = width - text.Length;
+        
+        // as per string.Format, if width < text, we just write value
+        if (padding <= 0)
+        {
+            return Append(text);
+        }
+
+        // faster path when padding == 1
+        if (padding == 1)
+        {
+            if (alignment.HasFlags(Alignment.Left))
+            {
+                return Append(text).Append(paddingChar);
+            }
+            else
+            {
+                return Append(paddingChar).Append(paddingChar);
+            }
+        }
+        
+        // Use alignment
+        if (alignment == Alignment.Left)
+        {
+            return Append(text).Repeat(padding, paddingChar);
+        }
+        
+        if (alignment == Alignment.Right)
+        {
+            return Repeat(padding, paddingChar).Append(text);
+        }
+        
+        // if (alignment.HasFlag(Alignment.Center))
+        Debug.Assert(alignment.HasFlags(Alignment.Center));
+            
+        // if padding is even, pre + post are the same
+        if (padding.IsEven())
+        {
+            int pad = FastMath.HalfRoundDown(padding);
+            return Repeat(pad, paddingChar)
+                .Append(text)
+                .Repeat(pad, paddingChar);
+        }
+            
+        // padding is odd, we need to use bias
+        double half = padding / 2.0d;
+
+        int pre;
+        int post;
+
+        // Center w/Left Bias?
+        if (alignment.HasFlag(Alignment.Left))
+        {
+            pre = (int)Math.Floor(half);
+            post = (int)Math.Ceiling(half);
+        }
+        else
+        {
+            // Defaults to Center w/Right Bias
+            pre = (int)Math.Ceiling(half);
+            post = (int)Math.Floor(half);
+        }
+
+        return Repeat(pre, paddingChar)
+            .Append(text)
+            .Repeat(post, paddingChar);
+    }
+    
+    public B AlignFormat<T>(T? value, 
+        int width,
+        string? format = null,
+        char paddingChar = ' ',
+        Alignment alignment = Alignment.None)
+    {
+        if (width == 0)
+            return Format(value, format);
+        
+        // if no alignment is specified, we use -width as Left, +width as Right (same as string.Format)
+        if (alignment == Alignment.None)
+        {
+            if (width < 0)
+            {
+                alignment = Alignment.Left;
+                width = -width;
+            }
+            else
+            {
+                alignment = Alignment.Right;
+            }
+        }
+
+        // Grab our position before formatting the value
+        int start = _text.Count;
+        
+        // Format the value onto us
+        Format<T>(value, format);
+
+        // get end and length
+        int end = _text.Count;
+        int length = end - start;
+        
+        // calculate the amount of padding we have to add
+        var padding = width - length;
+        
+        // as per string.Format, if width < text, we just write the value, which we've done
+        if (padding <= 0)
+            return _builder;
+
+        // Fast path for padding == 1
+        if (padding == 1)
+        {
+            // we start off left-aligned
+            if (alignment.HasFlags(Alignment.Left))
+                return Append(paddingChar);
+            // shift one right
+            return Insert(start, paddingChar);
+        }
+        
+        // We're already left-aligned
+        if (alignment == Alignment.Left)
+        {
+            return Repeat(padding, paddingChar);
+        }
+        
+        // Everything after this point will involve some amount of insertion
+        
+        // Easy shift to right-align
+        if (alignment == Alignment.Right)
+        {
+            return Insert(start, TextHelper.Repeat(padding, paddingChar));
+        }
+        
+        // Assume centered at this point
+        Debug.Assert(alignment.HasFlags(Alignment.Center));
+            
+        // if padding is even, pre + post are the same
+        if (padding.IsEven())
+        {
+            string pad = TextHelper.Repeat(FastMath.HalfRoundDown(padding), paddingChar);
+            // Insert before, then just append after
+            return Insert(start, pad).Append(pad);
+        }
+            
+        // padding is odd, we need to use bias
+        double half = padding / 2.0d;
+
+        int pre;
+        int post;
+
+        // Center w/Left Bias?
+        if (alignment.HasFlag(Alignment.Left))
+        {
+            pre = (int)Math.Floor(half);
+            post = (int)Math.Ceiling(half);
+        }
+        else
+        {
+            // Defaults to Center w/Right Bias
+            pre = (int)Math.Ceiling(half);
+            post = (int)Math.Floor(half);
+        }
+
+        // Insert pre before, append post behind
+        return Insert(start, TextHelper.Repeat(pre, paddingChar))
+            .Repeat(post, paddingChar);
+    }
+    
+    
+#endregion
+
+
+#region Enumeration
     public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
         foreach (var t in values)
@@ -307,10 +510,10 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
-    public B EnumerateAppend<T>(ReadOnlySpan<T> values) 
+    public B EnumerateAppend<T>(ReadOnlySpan<T> values)
         => Enumerate(values, static (tb, value) => tb.Append(value));
 
-    public B EnumerateAppend<T>(IEnumerable<T> values) 
+    public B EnumerateAppend<T>(IEnumerable<T> values)
         => Enumerate(values, static (tb, value) => tb.Append(value));
 
 
@@ -336,10 +539,8 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
-    #region Delimit
-
-    #region ReadOnlySpan
-
+#region Delimit
+#region ReadOnlySpan
     public B Delimit<T>(char delimiter, ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
         int len = values.Length;
@@ -394,11 +595,9 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public B DelimitAppend<T>(string delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(scoped text delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(Action<B> onDelimit, ReadOnlySpan<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+#endregion
 
-    #endregion
-
-    #region IEnumerable
-
+#region IEnumerable
     public B Delimit<T>(char delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
     {
         using var e = values.GetEnumerator();
@@ -454,31 +653,77 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     public B DelimitAppend<T>(string delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(scoped text delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
     public B DelimitAppend<T>(Action<B> onDelimit, IEnumerable<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+#endregion
+#endregion
+#endregion
 
-    #endregion
-
-    #endregion
-
-    #endregion
-
-    #region Insertion
-
-    public Result<int, Exception> TryInsert(Index index, char ch)
-        => _text.TryInsert(index, ch);
-
-    public Result<int, Exception> TryInsert(Index index, scoped text text)
-        => _text.TryInsertMany(index, text);
-
-    public Result<int, Exception> TryInsert(Index index, string? str)
-        => _text.TryInsertMany(index, str.AsSpan());
-
+#region Insertion
     void IList<char>.Insert(int index, char item)
     {
         _text.TryInsert(index, item).ThrowIfError();
     }
+    
+    public B Insert(Index index, char ch)
+    {
+        _text.TryInsert(index, ch).ThrowIfError();
+        return _builder;
+    }
+    
+    public B Insert(Index index, scoped text text)
+    {
+        _text.TryInsertMany(index, text).ThrowIfError();
+        return _builder;
+    }
 
-    #endregion
+    public B Insert(Index index, string? str) => Insert(index, str.AsSpan());
+#endregion
 
+    public B Allocate(int count, WSAct<char> write)
+    {
+        if (count <= 0) 
+            return _builder;
+        var span = _text.Allocate(count);
+        write(span);
+        return _builder;
+    }
+
+    public B Repeat(int count, char ch)
+    {
+        if (count <= 0)
+            return _builder;
+        var span = _text.Allocate(count);
+        span.Fill(ch);
+        return _builder;
+    }
+    
+    public B Repeat(int count, scoped text text)
+    {
+        int textLength = text.Length;
+        int totalLength = count * textLength;
+        if (totalLength <= 0)
+            return _builder;
+        Span<char> buffer = _text.Allocate(totalLength);
+        int i = 0;
+        do
+        {
+            TextHelper.Unsafe.CopyBlock(text, buffer[i..], textLength);
+            i += textLength;
+        } while (i < totalLength);
+        return _builder;
+    }
+
+    public B RepeatFormat<T>(int count, T? value, string? format = null)
+    {
+        if (count <= 0)
+            return _builder;
+        var start = _text.Count;
+        Format<T>(value, format);
+        int length = _text.Count - start;
+        var formattedSpan = _text.Written[^length..];
+        Debugger.Break();
+        return Repeat(count - 1, formattedSpan);
+    }
+    
 
     public Option<int> TryFindIndex(char ch, bool firstToLast = true, Index? offset = default, IEqualityComparer<char>? charComparer = null)
         => _text.TryFindIndex(ch, firstToLast, offset, charComparer);

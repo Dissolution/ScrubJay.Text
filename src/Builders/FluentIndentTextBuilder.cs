@@ -4,11 +4,18 @@ namespace ScrubJay.Text.Builders;
 
 public sealed class FluentIndentTextBuilder : FluentIndentTextBuilder<FluentIndentTextBuilder>
 {
-    public static FluentIndentTextBuilder New => new();
+    /// <summary>
+    /// Gets a <c>new</c> <see cref="FluentIndentTextBuilder"/> instance
+    /// </summary>
+    public static FluentIndentTextBuilder New
+    {
+        [MustDisposeResource]
+        get => new();
+    }
 }
 
 public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
-    where B : FluentIndentTextBuilder<B>
+    where B : FluentIndentTextBuilder<B>, new()
 {
     private Whitespace _whitespace = new();
 

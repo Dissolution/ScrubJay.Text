@@ -1,12 +1,18 @@
 ﻿
 using System.Diagnostics;
-using ScrubJay.Text.Dumping;
+using ScrubJay.Text.Builders;
 
-var thing = (147, "TJ");
+int id = Random.Shared.Next();
 
-var d= Dump.Value(thing);
+var text = TextBuilder.New
+    .AppendLine($"{1234:N0}")
+    .AppendLine($"{4567:N0}")
+    .AppendLine($"{6789:N0}")
+    .ToStringAndDispose();
 
-Console.WriteLine(d);
+Console.WriteLine(text);
+
+
 Debugger.Break();
 Console.ReadLine();
 return 0;

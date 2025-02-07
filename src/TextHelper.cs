@@ -448,4 +448,28 @@ public static class TextHelper
     }
 
 #endregion
+
+    
+    public static string Repeat(int count, char ch)
+    {
+        if (count <= 0) 
+            return string.Empty;
+        return new string(ch, count);
+    }
+    
+    public static string Repeat(int count, scoped text text)
+    {
+        int textLength = text.Length;
+        int totalLength = count * textLength;
+        if (totalLength <= 0)
+            return string.Empty;
+        Span<char> buffer = stackalloc char[totalLength];
+        int i = 0;
+        do
+        {
+            Unsafe.CopyBlock(text, buffer[i..], textLength);
+            i += textLength;
+        } while (i < totalLength);
+        return buffer.AsString();
+    }
 }

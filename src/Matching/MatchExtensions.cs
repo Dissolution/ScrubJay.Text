@@ -1,6 +1,4 @@
-﻿using ScrubJay.Enums;
-
-namespace ScrubJay.Text.Matching;
+﻿namespace ScrubJay.Text.Matching;
 
 public static class MatchExtensions
 {
