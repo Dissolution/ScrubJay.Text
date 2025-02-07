@@ -31,7 +31,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
         // If we're on a new line, use default logic
         if (IsOnStartOfNewLine())
         {
-            build?.Invoke(_builder);
+            build.Invoke(_builder);
             return;
         }
 
