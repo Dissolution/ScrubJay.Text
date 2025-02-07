@@ -15,7 +15,7 @@ public sealed class FluentIndentTextBuilder : FluentIndentTextBuilder<FluentInde
 }
 
 public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
-    where B : FluentIndentTextBuilder<B>, new()
+    where B : FluentIndentTextBuilder<B>
 {
     private Whitespace _whitespace = new();
 
