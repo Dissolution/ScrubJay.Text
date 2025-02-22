@@ -1,59 +1,61 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <!-- Multi Target -->
-        <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net481;</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  <PropertyGroup>
+    <!-- Multi Target -->
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net481;</TargetFrameworks>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <IsPackable>false</IsPackable>
-        <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
 
-        <AssemblyName>ScrubJay.Text.Tests</AssemblyName>
-        <RootNamespace>ScrubJay.Text.Tests</RootNamespace>
-        <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
-    </PropertyGroup>
+    <AssemblyName>ScrubJay.Text.Tests</AssemblyName>
+    <RootNamespace>ScrubJay.Text.Tests</RootNamespace>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0|AnyCPU'">
-      <WarningLevel>8</WarningLevel>
-    </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0|AnyCPU'">
-      <WarningLevel>8</WarningLevel>
-    </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
 
-    <!-- Global Usings -->
-    <ItemGroup>
-        <Using Include="System.Diagnostics.CodeAnalysis" />
-        <Using Include="System.Numerics" />
-        <Using Include="System.Runtime.CompilerServices" />
-        <Using Include="System.Runtime.InteropServices" />
-        <Using Include="System.Collections" />
+  <!-- Global Usings -->
+  <ItemGroup>
+    <Using Include="System.Diagnostics.CodeAnalysis"/>
+    <Using Include="System.Numerics"/>
+    <Using Include="System.Runtime.CompilerServices"/>
+    <Using Include="System.Runtime.InteropServices"/>
+    <Using Include="System.Collections"/>
 
-        <Using Include="Xunit" />
-    </ItemGroup>
+    <Using Include="Xunit"/>
+  </ItemGroup>
 
-    <!-- NuGet Packages -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
-        <PackageReference Include="System.Memory" Version="4.6.0" />
-    </ItemGroup>
+  <!-- NuGet Packages -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
+    <PackageReference Include="System.Memory" Version="4.6.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.4">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="xunit.v3" Version="1.0.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0"/>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" Version="1.1.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\src\ScrubJay.Text.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\ScrubJay.Text.csproj"/>
+  </ItemGroup>
 </Project>

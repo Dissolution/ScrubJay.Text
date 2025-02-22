@@ -1,13 +1,14 @@
-﻿#pragma warning disable CA1002
+﻿using ScrubJay.Collections.Pooled;
+#pragma warning disable CA1002
 
 namespace ScrubJay.Text.Builders;
 
 public sealed class Whitespace : IDisposable
 {
-    private static readonly string DefaultNewLine = Environment.NewLine;
+    private static readonly string _defaultNewLine = Environment.NewLine;
 
-    private string _newLine = DefaultNewLine;
-    private int _newLineLength = DefaultNewLine.Length;
+    private string _newLine = _defaultNewLine;
+    private int _newLineLength = _defaultNewLine.Length;
 
     private readonly PooledList<char> _whitespace = new();
     private readonly Stack<int> _indentIndices = [];
@@ -25,7 +26,7 @@ public sealed class Whitespace : IDisposable
         get => _newLine;
         set
         {
-            var nl = value ?? DefaultNewLine;
+            var nl = value ?? _defaultNewLine;
             if (_newLine != nl)
             {
                 _whitespace.TryRemoveMany(.._newLine.Length);

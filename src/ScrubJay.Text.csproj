@@ -34,6 +34,7 @@
 
             S1939;  <!-- inheritance list -->
             IDE0058;        <!-- -->
+            CS1591;
         </NoWarn>
     </PropertyGroup>
 
@@ -54,7 +55,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.10.2-alpha</PackageVersion>
+        <PackageVersion>0.11.1-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -103,7 +104,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ScrubJay.Core" Version="0.20.1-alpha" />
+        <PackageReference Include="ScrubJay.Core" Version="0.21.1-alpha" />
 
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>

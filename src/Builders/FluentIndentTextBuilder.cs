@@ -45,9 +45,9 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
             return;
         }
 
-        string str = _text.ToString();
-        int dbgIndex = i + newLine.Length;
-        string dbStr = str.Substring(dbgIndex);
+        //string str = _text.ToString();
+        //int dbgIndex = i + newLine.Length;
+        //string dbStr = str.Substring(dbgIndex);
 
         var indent = _text.Slice(i + newLine.Length).ToString();
         // We need to start a new indent from this point

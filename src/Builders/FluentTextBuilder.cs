@@ -1,4 +1,5 @@
-﻿using ScrubJay.Fluent;
+﻿using ScrubJay.Collections.Pooled;
+using ScrubJay.Fluent;
 using ScrubJay.Text.Utilities;
 
 #pragma warning disable S3247, CA1715, S4136, RCS1220, CA1033, CA1710
@@ -791,11 +792,8 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public text AsText() => _text.Written;
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_text).GetEnumerator();
-    IEnumerator<char> IEnumerable<char>.GetEnumerator() => ((IEnumerable<char>)_text).GetEnumerator();
-
-    public Span<char>.Enumerator GetEnumerator() => _text.GetEnumerator();
-
+    IEnumerator IEnumerable.GetEnumerator() => _text.GetEnumerator();
+    IEnumerator<char> IEnumerable<char>.GetEnumerator() => _text.GetEnumerator();
 
     [HandlesResourceDisposal]
     public virtual void Dispose()
