@@ -7,7 +7,7 @@ public class FluentIndentTextBuilderTests
     [Fact]
     public void StartAndEndIndentWorks()
     {
-        const string Output = """
+        const string OUTPUT = """
         L1
         L2L3
         ----L4
@@ -35,7 +35,7 @@ public class FluentIndentTextBuilderTests
             .ToStringAndDispose();
 
         Assert.Equal("----", indent);
-        Assert.Equal(Output, text);
+        Assert.Equal(OUTPUT, text);
     }
 
 
@@ -54,28 +54,28 @@ public class FluentIndentTextBuilderTests
             .NewLine()
             .Append("End");
 
-        const string Output = """
+        const string OUTPUT = """
             Start
                level 1, A
                level 1, B
             End
             """;
 
-        Assert.Equal(Output, builder.ToString());
+        Assert.Equal(OUTPUT, builder.ToString());
     }
 
 
     [Fact]
     public void NewLinesAreParsedInText()
     {
-        const string Sample = """
+        const string SAMPLE = """
             Come with me,
             into the trees.
             We lay on the grass,
             and let hours pass.
             """;
 
-        const string SampleIndented = """
+        const string SAMPLE_INDENTED = """
             Come with me,
                 into the trees.
                 We lay on the grass,
@@ -86,11 +86,11 @@ public class FluentIndentTextBuilderTests
 
         builder.Indented(
             "    ", b => b
-                .Append(Sample));
+                .Append(SAMPLE));
 
         var output = builder.ToString();
 
-        Assert.Equal(SampleIndented, output);
+        Assert.Equal(SAMPLE_INDENTED, output);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class FluentIndentTextBuilderTests
             }
             """);
 
-        const string Output = $$"""
+        const string OUTPUT = $$"""
             public class TestClass()
             {
                 public void DoThing()
@@ -158,6 +158,6 @@ public class FluentIndentTextBuilderTests
             """;
 
         string builderString = builder.ToString();
-        Assert.Equal(Output, builderString);
+        Assert.Equal(OUTPUT, builderString);
     }
 }
